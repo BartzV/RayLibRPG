@@ -92,12 +92,14 @@ public class Camara2D
     public Single ZBuffer;
     public List<IRenderizable> Relativos;
     public List<IRenderizable> Absolutos;
+    public Color Tinte;
 
     public Camara2D()
     {
         this.Relativos = new();
         this.Absolutos = new();
         this.ZBuffer = 1f;
+        this.Tinte = Color.White;
     }
 
     public void DibujarAbsolutos(Single alfa)
