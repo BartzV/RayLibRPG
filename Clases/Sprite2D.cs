@@ -29,7 +29,7 @@ public class Sprite2D : IRenderizable, IActualizable
         this.Textura = textura;
         this.Fuente = fuente;
         this.Destino = destino;
-        this.Centro = new Vector2(fuente.Width / 2, fuente.Height / 2);
+        this.Centro = new Vector2(destino.Width / 2, destino.Height / 2);
         this.Rotacion = 0.0f;
         this.Tinte = Color.White;
         this.ZBuffer = 1.0F;
@@ -75,6 +75,14 @@ public class Sprite2D : IRenderizable, IActualizable
             this._centrado,
             this.Rotacion,
             this.Tinte);
+    }
+    public void MoverX(Single dx)
+    {
+        this.PosicionActual.X += dx;
+    }
+    public void MoverY(Single dy)
+    {
+        this.PosicionActual.Y += dy;
     }
 }
 

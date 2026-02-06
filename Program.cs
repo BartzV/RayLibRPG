@@ -13,6 +13,7 @@ public class Program
     public static Sprite2D[] pruebaCamara;
     public static Camara2D Camara;
     public static InputCamara ControlRemoto;
+    public static InputSprite ControlSprite;
     public static List<IActualizable> Actualizables;
 
     public static void Main(string[] args)
@@ -21,20 +22,20 @@ public class Program
         Double tiempoAcumulado = 0.0;
         while (!Raylib.WindowShouldClose())
         {
-            // DeltaTime es el tiempo que pasó desde el frame anterior (ej: 0.016s)
             Double frameTime = Raylib.GetFrameTime();
-            // Calculamos el alfa: qué porcentaje del camino al siguiente tick recorrimos
-            // Esto es lo que usás para el LERP en el Draw
-            Single alfa = (Single)(tiempoAcumulado * CONFIG.TPS);
+            tiempoAcumulado += frameTime; // 1. Primero sumamos TODO el tiempo nuevo
 
-            // Si el tiempo acumulado superó el "Tickrate", es hora de actualizar la lógica
-            tiempoAcumulado += frameTime;
+            // 2. Ejecutamos todos los Updates que quepan en ese tiempo
             while (tiempoAcumulado >= CONFIG.Tickrate)
             {
-                Update(alfa);
+                Update(1.0f); // El alfa acá no importa mucho, es lógica pura
                 CONFIG.TicksTranscurridos++;
                 tiempoAcumulado -= CONFIG.Tickrate;
             }
+
+            // 3. RECIÉN ACÁ calculamos el Alfa con lo que sobró
+            // tiempoAcumulado es el "resto" de la división, entre 0 y Tickrate
+            Single alfa = (Single)(tiempoAcumulado / CONFIG.Tickrate);
 
             Draw(alfa);
         }
@@ -63,7 +64,6 @@ public class Program
 
     public static void Initialize()
     {
-        // Olvidate del Async, hacela simple y directa
         CONFIG.Inicializar();
         LetraManager.Inicializar();
         CONFIG.CambiarResolucion(512 * 2 + 16, 288 * 2);
@@ -78,21 +78,19 @@ public class Program
         limites[2] = new Sprite2D(textura, (Rectangle)LetraManager.GetRectangle("~")!, new Rectangle(CONFIG.WIDTH - 4, 4, 8, 8));
         limites[3] = new Sprite2D(textura, (Rectangle)LetraManager.GetRectangle("~")!, new Rectangle(CONFIG.WIDTH - 4, CONFIG.HEIGHT - 4, 8, 8));
 
-        pruebaCamara = new Sprite2D[2];
-        pruebaCamara[0] = new Sprite2D(textura, (Rectangle)LetraManager.GetRectangle("F")!, new Rectangle(150, 100, 32, 32));
+        pruebaCamara = new Sprite2D[1];
+        pruebaCamara[0] = new Sprite2D(textura, (Rectangle)LetraManager.GetRectangle("~")!, new Rectangle(120, 200, 64, 64));
         pruebaCamara[0].ZBuffer = 2;
-        pruebaCamara[1] = new Sprite2D(textura, (Rectangle)LetraManager.GetRectangle("F")!, new Rectangle(150, 100, 32, 32));
-        pruebaCamara[1].ZBuffer = 4;
 
-        Camara.Relativos.Add(pruebaCamara[0]);
-        Camara.Relativos.Add(pruebaCamara[1]);
+        Camara.Relativos.AddRange(pruebaCamara);
 
         foreach (Sprite2D limite in limites)
         {
             Camara.Absolutos.Add(limite);
         }
 
-        ControlRemoto = new InputCamara(Camara);
+        //ControlRemoto = new InputCamara(Camara);
+        ControlSprite = new InputSprite(pruebaCamara[0]);
 
         Actualizables = new();
         Actualizables.AddRange(limites);
@@ -102,10 +100,8 @@ public class Program
     public static void Update(Single alfa)
     {
         Actualizables.ForEach(a => a.Update());
-
-        ControlRemoto.Update(alfa);
-        pruebaCamara[0].Rotacion += 5.0f;
-        pruebaCamara[1].Rotacion += 5.0f;
+        pruebaCamara[0].Rotacion += 5.0f; 
+        ControlSprite.Update(alfa);
     }
 
     public static void Draw(Single alfa)
@@ -134,8 +130,6 @@ public class Program
 
     public static void FrameDraw(Single alfa)
     {
-        // El 'alfa' sirve para predecir la posición y que se vea fluido
-        // Ejemplo: posicionDibujado = posicionActual + (velocidad * alfa);
         //Raylib.DrawText($"Ticks: {CONFIG.TicksTranscurridos}", 10, 10, 20, Color.DarkGray);
         //Raylib.DrawText($"Frames: {CONFIG.FramesTranscurridos}", 10, 40, 20, Color.Maroon);
         //Raylib.DrawText($"Alfa (Interpolación): {alfa:F2}", 10, 70, 20, Color.Blue);
@@ -181,4 +175,39 @@ public class InputCamara
             this.Camara.Desplazamiento.X -= 2;
         }
     }
+}
+
+public class InputSprite
+{
+    public Sprite2D Sprite;
+    private Int64 _ultimoInput;
+    private const Int64 DELAY = 4;
+    public InputSprite(Sprite2D sprite)
+    {
+        this.Sprite = sprite;
+        this._ultimoInput = -1;
+    }
+    // alfa sin usar
+    public void Update(Single alfa)
+    {
+        if (this._ultimoInput + DELAY > CONFIG.TicksTranscurridos)
+            return;
+        if (Raylib.IsKeyDown(KeyboardKey.Up))
+        {
+            this.Sprite.MoverY(-2f);
+        }
+        if (Raylib.IsKeyDown(KeyboardKey.Down))
+        {
+            this.Sprite.MoverY(2f);
+        }
+        if (Raylib.IsKeyDown(KeyboardKey.Right))
+        {
+            this.Sprite.MoverX(2f);
+        }
+        if (Raylib.IsKeyDown(KeyboardKey.Left))
+        {
+            this.Sprite.MoverX(-2f);
+        }
+    }
+
 }

@@ -1,0 +1,4 @@
+﻿[*.{cs,vb}]
+
+# IDE0049: Simplificar nombres
+dotnet_diagnostic.IDE0049.severity = none

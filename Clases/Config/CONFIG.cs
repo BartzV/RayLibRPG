@@ -49,7 +49,7 @@ internal static class CONFIG
 
     private static void InicializarTexturas()
     {
-        CONFIG.TexturasCargadas.Add("Letra", Raylib.LoadTexture("C:\\Users\\42085087\\Documents\\Recuperado\\Reparar\\RayLibRPG\\Assets\\FuentesRES.png"));
+        CONFIG.TexturasCargadas.Add("Letra", Raylib.LoadTexture(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Assets\FuentesRES.png")));
     }
 
 }
