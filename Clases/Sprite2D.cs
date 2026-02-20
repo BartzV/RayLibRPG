@@ -3,16 +3,27 @@ using System.Numerics;
 
 namespace RayLibRPG.Clases;
 
-public class Sprite2D : IRenderizable, IActualizable
+public class Sprite2D : IRenderizable, IActualizable, IDesplazable
 {
     public Texture2D Textura;
     // OJO! Rectangle es de RayLib, no de System.Drawing!
     public Rectangle Fuente;
     public Rectangle Destino;
-    public Single ZBuffer;
+    public Single FactorProfundidad;
     // Posiciones en el mundo real
-    protected Vector2 PosicionActual;
-    protected Vector2 PosicionAnterior;
+    public Vector2 PosicionActual;
+    public Vector2 PosicionAnterior;
+    // IDesplazable
+    public Vector2 Posicion
+    {
+        get => PosicionActual;
+        set => PosicionActual = value;
+    }
+    public Single ZBuffer
+    {
+        get => FactorProfundidad;
+        set => FactorProfundidad = value;
+    }
     // Punto de origen para rotaciones y escalados
     public Vector2 Centro;
     public Single Rotacion;
@@ -40,7 +51,6 @@ public class Sprite2D : IRenderizable, IActualizable
     {
         this.PosicionAnterior = this.PosicionActual;
     }
-    // alfa sin usar de momento.
     public void Draw(Single alfa)
     {
         this._posInterpolada = Vector2.Lerp(this.PosicionAnterior, this.PosicionActual, alfa);
@@ -48,19 +58,28 @@ public class Sprite2D : IRenderizable, IActualizable
         this.Destino.Y = _posInterpolada.Y;
 
         Raylib.DrawTexturePro(
-            this.Textura, 
-            this.Fuente, 
-            this.Destino, 
-            this.Centro, 
-            this.Rotacion, 
+            this.Textura,
+            this.Fuente,
+            this.Destino,
+            this.Centro,
+            this.Rotacion,
             this.Tinte);
     }
+    // Esto me trajo demasiados problemas. Creo que funciona. Te odio función Draw.
     public void Draw(Single alfa, Vector2 desp, Single zbuf)
     {
+        // Por qué no uso un auxiliar para evitar alloc? Porque eso se aloja en stack, no en heap.
         Single escalaFinal = zbuf / this.ZBuffer;
+        this._posInterpolada = Vector2.Lerp(this.PosicionAnterior, this.PosicionActual, alfa);
+        this.Destino.X = _posInterpolada.X;
+        this.Destino.Y = _posInterpolada.Y;
 
-        this._desplazado.X = (this.Destino.X + desp.X) * escalaFinal;
-        this._desplazado.Y = (this.Destino.Y + desp.Y) * escalaFinal;
+        // Resulta que esto no andaba, lo dejo documentado por las dudas.
+        //this._desplazado.X = (this.Destino.X + desp.X) * escalaFinal;
+        //this._desplazado.Y = (this.Destino.Y + desp.Y) * escalaFinal;
+
+        this._desplazado.X = this.Destino.X * escalaFinal + desp.X;
+        this._desplazado.Y = this.Destino.Y * escalaFinal + desp.Y;
 
         this._desplazado.Width = this.Destino.Width * escalaFinal;
         this._desplazado.Height = this.Destino.Height * escalaFinal;
@@ -76,56 +95,49 @@ public class Sprite2D : IRenderizable, IActualizable
             this.Rotacion,
             this.Tinte);
     }
-    public void MoverX(Single dx)
-    {
-        this.PosicionActual.X += dx;
-    }
-    public void MoverY(Single dy)
-    {
-        this.PosicionActual.Y += dy;
-    }
-}
 
-public class Camara2D
-{
-    public Vector2 Desplazamiento;
-    public Single ZBuffer;
-    public List<IRenderizable> Relativos;
-    public List<IRenderizable> Absolutos;
-    public Color Tinte;
-
-    public Camara2D()
+    public void Mover(Vector2 mov)
     {
-        this.Relativos = new();
-        this.Absolutos = new();
-        this.ZBuffer = 1f;
-        this.Tinte = Color.White;
+        this.Posicion += mov;
     }
 
-    public void DibujarAbsolutos(Single alfa)
+    public void Posicionar(Vector2 pos)
     {
-        foreach(IRenderizable r in this.Absolutos)
-        {
-            r.Draw(alfa);
-        }
+        this.Posicion = pos;
     }
-    public void DibujarRelativos(Single alfa)
+
+    public void Zoom(Single zoom)
     {
-        foreach(IRenderizable r in this.Relativos)
-        {
-            r.Draw(alfa, this.Desplazamiento, this.ZBuffer);
-        }
+        this.ZBuffer += zoom;
     }
 
 }
 
 public interface IRenderizable
 {
-    public void Draw(Single alfa);
-    public void Draw(Single alfa, Vector2 desp, Single zbuf);
+    public abstract void Draw(Single alfa);
+    public abstract void Draw(Single alfa, Vector2 desp, Single zbuf);
 }
 
 public interface IActualizable
 {
-    public void Update();
+    public abstract void Update();
+}
+
+public interface IDesplazable
+{
+    Vector2 Posicion { get; set; }
+    Single ZBuffer { get; set; }
+    public abstract void Mover(Vector2 mov);
+    //{
+    //    this.Posicion += mov;
+    //}
+    public abstract void Posicionar(Vector2 pos);
+    //{
+    //    this.Posicion = pos;
+    //}
+    public abstract void Zoom(Single zoom);
+    //{
+    //    this.ZBuffer += zoom;
+    //}
 }

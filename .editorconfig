@@ -2,3 +2,6 @@
 
 # IDE0049: Simplificar nombres
 dotnet_diagnostic.IDE0049.severity = none
+
+# IDE0003: Quitar cualificación
+dotnet_diagnostic.IDE0003.severity = none

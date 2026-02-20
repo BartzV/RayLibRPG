@@ -1,0 +1,79 @@
+﻿using Raylib_cs;
+using RayLibRPG.Clases.Config;
+
+namespace RayLibRPG.Clases.Letras;
+
+public static class LetraManager
+{
+    private static Boolean _inicializado = false;
+    private static Texture2D? _textura;
+    public static Texture2D Textura
+    {
+        get => _textura ?? throw new InvalidOperationException("Inicializá el LetraManager!!!");
+    }
+    public static Rectangle? GetRectangle(Char s)
+    {
+        if (!_inicializado)
+            throw new InvalidOperationException("Inicializá el LetraManager!!!");
+        if (Diccionario.TryGetValue(s, out Rectangle rect))
+        {
+            return rect;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    public static Rectangle GetEspacio()
+    {
+        if (!_inicializado)
+            throw new InvalidOperationException("Inicializá el LetraManager!!!");
+        return Diccionario[' ']!;
+    }
+
+    // Por qué un Char? Porque soy así de pelotudo. Ahora va a costar un huevo agregar íconos.
+    private static Dictionary<Char, Rectangle> Diccionario = new()
+    {
+    };
+
+    public static void Inicializar()
+    {
+        if (_inicializado) return;
+
+        _textura = Raylib.LoadTexture(ConfigManager.RUTA_LETRAS);
+
+        // Definimos las filas tal cual están en tu PNG (8 píxeles de alto cada una)
+        // Fila 0 (Y=0): Mayúsculas y tildes raras
+        // Fila 1 (Y=8): Minúsculas y tildes raras
+        // Fila 2 (Y=16): Números, símbolos matemáticos, etc.
+        // Fila 3 (Y=24): Símbolos raros
+
+        MapearFila("ABCDEFGHIJKLMNOPQRSTUVWXYZÑÁÉÍÓÚ", 0);
+        MapearFila("abcdefghijklmnopqrstuvwxyzñáéíóú", 8);
+        MapearFila("0123456789+-*/%=$#@            Ü", 16);
+        MapearFila(".,:;_…\"'¿?¡!()[]<>✓            ü", 24);
+        MapearFila("~", 56);
+
+        // El espacio siempre es especial (no ocupa lugar en el atlas)
+        if (!Diccionario.ContainsKey(' ')) Diccionario.Add(' ', new Rectangle(0, 0, 0, 0));
+
+        _inicializado = true;
+    }
+
+    /// <summary>
+    /// Recorre un string y asigna cada char a un rectángulo de 8x8 en la fila Y especificada.
+    /// </summary>
+    private static void MapearFila(string fila, int posY)
+    {
+        for (int i = 0; i < fila.Length; i++)
+        {
+            char c = fila[i];
+
+            // Si es un espacio en el mapa, lo salteamos para no pisar el ' ' real
+            // o si ya existe el carácter por alguna razón.
+            if (c == ' ' || Diccionario.ContainsKey(c)) continue;
+
+            Diccionario.Add(c, new Rectangle(i * 8, posY, 8, 8));
+        }
+    }
+}
