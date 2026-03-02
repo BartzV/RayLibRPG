@@ -9,7 +9,7 @@ namespace RaylibRPG;
 
 public class Program
 {
-    public static EscenarioEngine EscenarioActual = null;
+    public static EscenarioEngine EscenarioActual = null!;
 
     public static void Main(string[] args)
     {
@@ -30,6 +30,7 @@ public class Program
             while (tiempoAcumulado >= ConfigManager.TICKRATE)
             {
                 Update();
+
                 EngineManager.TicksTranscurridos++;
                 tiempoAcumulado -= ConfigManager.TICKRATE;
             }
@@ -50,7 +51,7 @@ public class Program
         EngineManager.Inicializar();       // Importante. Maneja los ticks, la resolución y mucho más.
         LetraManager.Inicializar();        // Importante. Maneja las letras.
 
-        ScreenManager.CambiarResolucion(512 * 3, 288 * 3);
+        //ScreenManager.CambiarResolucion(512 * 3, 288 * 3);
         ScreenManager.SetFPS(FPS_Options.FPS_120);
 
         ScreenManager.LimpiarCapas();

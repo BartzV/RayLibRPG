@@ -171,7 +171,7 @@ public static class CapaFactory
         Capa principal = new Capa("Main", ConfigManager.WIDTH, ConfigManager.HEIGHT, Vector2.Zero);
         principal.Fondo = Color.SkyBlue;
         principal.DesplazamientoCamara = new Vector2(ConfigManager.WIDTH / 2, ConfigManager.HEIGHT / 2);
-        principal.FactorProfundidad = 2F;
+        principal.FactorProfundidad = 1F;
         //secundario.Fondo = new Color(0, 0, 0, 0);
 
         return new Capa[] { principal };

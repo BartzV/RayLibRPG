@@ -113,6 +113,47 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
 
 }
 
+public class MultiSprite2D : IRenderizable, IActualizable
+{
+    public Sprite2D Prototipo; // Usamos un sprite base para sacar los datos
+    public Vector2[] Posiciones;
+    public Vector2[] PosicionesAnteriores;
+
+    public MultiSprite2D(Sprite2D prototipo, int cantidad)
+    {
+        this.Prototipo = prototipo;
+        this.Posiciones = new Vector2[cantidad];
+        this.PosicionesAnteriores = new Vector2[cantidad];
+    }
+
+    public void Update()
+    {
+        // Sincronizamos todas las posiciones para el Lerp
+        for (int i = 0; i < Posiciones.Length; i++)
+        {
+            PosicionesAnteriores[i] = Posiciones[i];
+        }
+    }
+
+    public void Draw(Single alfa, Vector2 desp, Single zbuf)
+    {
+        // El truco está en "disfrazar" al prototipo en cada iteración
+        for (int i = 0; i < Posiciones.Length; i++)
+        {
+            this.Prototipo.PosicionAnterior = this.PosicionesAnteriores[i];
+            this.Prototipo.PosicionActual = this.Posiciones[i];
+
+            // Reutilizamos tu función de Draw que tanto odiás (pero que anda)
+            this.Prototipo.Draw(alfa, desp, zbuf);
+        }
+    }
+
+    public void Draw(float alfa)
+    {
+        throw new NotImplementedException();
+    }
+}
+
 public interface IRenderizable
 {
     public abstract void Draw(Single alfa);

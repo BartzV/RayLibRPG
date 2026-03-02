@@ -50,28 +50,25 @@ internal static class ScreenManager
 
     internal static void InicializarPantalla()
     {
-        // Crear la ventana. Se escala a la resolución interna al final de cada Draw.
-        Raylib.InitWindow(PantallaX, PantallaY, "Bartz RPG");
+        // 1. Usamos C# puro para saber el tamaño del monitor principal
+        // Esto funciona ANTES de cualquier ventana abierta.
+        int monitorAncho = 1920;
+        int monitorAlto = 1080;
 
-        // Ver capas
-        InsertarCapa(512, 288, Vector2.Zero, Color.LightGray); // Capa de acción, donde se dibuja el mapa y los personajes.
+        // 2. Configuramos los Flags para que no tenga bordes
+        Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow);
 
-        // Settear FPS.
+        // 3. Inicializamos con el tamaño real del monitor
+        Raylib.InitWindow(monitorAncho, monitorAlto, "Bartz RPG");
+
+        // 4. Forzamos la posición arriba a la izquierda para que no quede desplazada
+        Raylib.SetWindowPosition(0, 0);
+
+        // 5. Corremos tu lógica de escalado
+        CambiarResolucion(monitorAncho, monitorAlto);
+
         Raylib.SetTargetFPS(ScreenManager.FPS);
-        // Marcar como inicializado.
         _inicializado = true;
-    }
-
-    internal static void InsertarCapa(Int32 ancho, Int32 alto, Vector2 posicion, Color? color = null)
-    {
-        Capa res = new Capa("Main", ancho, alto, posicion);
-        res.EsRapido = true;
-        if (color.HasValue)
-        {
-            res.Fondo = color.Value;
-        }
-
-        ScreenManager._capas.Add(res);
     }
 
     internal static Capa InsertarCapa(Capa capa)

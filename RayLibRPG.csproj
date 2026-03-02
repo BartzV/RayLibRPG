@@ -8,6 +8,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Clases\Letras\InputBuffer.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Raylib-cs" Version="7.0.2" />
 	</ItemGroup>
 

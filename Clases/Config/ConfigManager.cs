@@ -10,5 +10,6 @@ internal static class ConfigManager
     public const Double TICKRATE = 1.0 / TPS;
     // Rutas de archivos. Agregar luego.
     public const String RUTA_LETRAS = @"Assets/FuentesRES.png";
+    public const String RUTA_BG_BOSQUE = @"Assets/BackGroundBosque.PNG";
 
 }

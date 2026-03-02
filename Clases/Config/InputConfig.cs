@@ -1,136 +1,168 @@
 ﻿using Raylib_cs;
 using RayLibRPG.Clases.Letras;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 
 namespace RayLibRPG.Clases.Config;
 
-/// <summary>
-/// Usada para fijar los controles del juego. No, no va a haber multijugador ni nada.
-/// </summary>
 internal static class InputConfig
 {
-    // Cursores:
-    public static Boolean Arriba => Raylib.IsKeyDown(KeyboardKey.Up);
-    public static Boolean Abajo => Raylib.IsKeyDown(KeyboardKey.Down);
-    public static Boolean Izquierda => Raylib.IsKeyDown(KeyboardKey.Left);
-    public static Boolean Derecha => Raylib.IsKeyDown(KeyboardKey.Right);
+    // Diccionario para seguir cuánto tiempo lleva cada tecla apretada
+    private static Dictionary<KeyboardKey, int> _timersControles = new();
+    // Array de controles, para cambiar en algún futuro, que se lea de un config o algo.
+    private static KeyboardKey[] _controles =
+        [KeyboardKey.Up, KeyboardKey.Down, KeyboardKey.Left, KeyboardKey.Right,
+            KeyboardKey.S, KeyboardKey.A, KeyboardKey.D];
 
-    // Comandos
-    public static Boolean Aceptar => Raylib.IsKeyPressed(KeyboardKey.S);
-    public static Boolean Cancelar => Raylib.IsKeyPressed(KeyboardKey.A);
-    public static Boolean Start => Raylib.IsKeyPressed(KeyboardKey.D);
+    // Cursores
+    public static Boolean IzquierdaPresionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.Left, init, rep);
+    public static Boolean DerechaPresionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.Right, init, rep);
+    public static Boolean ArribaPresionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.Up, init, rep);
+    public static Boolean AbajoPresionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.Down, init, rep);
+    // Botones
+    public static Boolean A_Presionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.A, init, rep);
 
-}
 
-public static class InputBuffer
-{
-    public static HashSet<KeyboardKey> TeclasPresionadas = new();
-
-    public static void Capturar()
+    public static void Actualizar()
     {
-        // Raylib.GetKeyPressed devuelve la tecla que se apretó en este frame de renderizado
-        int tecla;
-        while ((tecla = Raylib.GetKeyPressed()) != 0)
+        foreach (var tecla in _controles)
         {
-            TeclasPresionadas.Add((KeyboardKey)tecla);
+            if (Raylib.IsKeyDown(tecla))
+            {
+                if (!_timersControles.ContainsKey(tecla))
+                    _timersControles[tecla] = 0;
+                else
+                    _timersControles[tecla]++;
+            }
+            else
+            {
+                _timersControles.Remove(tecla);
+            }
         }
     }
 
-    public static void Limpiar()
+    public static bool AccionPresionada(KeyboardKey tecla, Int32 DELAY_INICIAL, Int32 DELAY_REPETICION)
     {
-        TeclasPresionadas.Clear();
-    }
-}
+        if (!_timersControles.ContainsKey(tecla)) return false;
 
-/// <summary>
-/// Ejemplo burdo
-/// </summary>
-public abstract class LectorInput
-{
-    public Int64 UltimoInput = -1L;
-    
-    public abstract Boolean Procesar();
-}
+        int ticks = _timersControles[tecla];
 
+        // 1. Se acaba de apretar (Tick 0)
+        if (ticks == 0) return true;
 
-public class LectorInputDebug : LectorInput
-{
-    public const Int64 Delay = 30L;
-    public IDesplazable Elemento;
-
-    public LectorInputDebug(IDesplazable elemento)
-    {
-        this.Elemento = elemento;
-    }
-    // Para evitar alloc
-    private Vector2 aux;
-    public override Boolean Procesar()
-    {
-        if(InputConfig.Izquierda && !InputConfig.Derecha)
+        // 2. Pasó el delay inicial y estamos en el tick de repetición
+        if (ticks >= DELAY_INICIAL)
         {
-            this.UltimoInput = EngineManager.TicksTranscurridos;
-            aux.X = -1;
-            aux.Y = 0;
-            this.Elemento.Mover(aux);
-            // Hacer algo...
-            return true;
-        }
-        if (InputConfig.Aceptar && EngineManager.TicksTranscurridos > (this.UltimoInput + Delay))
-        {
-            
+            return (ticks - DELAY_INICIAL) % DELAY_REPETICION == 0;
         }
 
         return false;
     }
 }
-
-public class LectorInputLetra : LectorInput
+/// <summary>
+/// Clase base para los lectores.
+/// </summary>
+public abstract class LectorInput
 {
-    public const Int64 Delay = 30L;
-    public static Char[] Vocales = ['A', 'E', 'I', 'O', 'U'];
+    protected Int32 DELAY_INICIAL = 1;
+    protected Int32 DELAY_REPETICION = 1;
+    public abstract Boolean Procesar();
+}
+/// <summary>
+/// Ejemplo. No tomar en serio.
+/// </summary>
+public class LectorInputDebug : LectorInput
+{
+    protected IDesplazable Elemento;
 
-    public Letra Elemento;
-    public Int32 VocalActual = 0;
-
-    public LectorInputLetra(Letra elemento)
+    public LectorInputDebug(IDesplazable elemento, int delayIni = 1, int delayRep = 1)
     {
         this.Elemento = elemento;
-        this.Elemento.CambiarLetra(Vocales[0]);
+        this.DELAY_INICIAL = delayIni;
+        this.DELAY_REPETICION = delayRep;
     }
 
-    private Vector2 aux;
+    // Para evitar alloc? Es un STRUCT!!! 
+    protected Vector2 izq = new Vector2(-1, 0);
+    protected Vector2 der = new Vector2(1, 0);
+    protected Vector2 arr = new Vector2(0, -1);
+    protected Vector2 abj = new Vector2(0, 1);
+
     public override Boolean Procesar()
     {
-        if (InputConfig.Izquierda && !InputConfig.Derecha)
-        {
-            this.UltimoInput = EngineManager.TicksTranscurridos;
-            aux.X = -1;
-            aux.Y = 0;
-            this.Elemento.Mover(aux);
-        }
-        if (InputConfig.Derecha && !InputConfig.Izquierda)
-        {
-            this.UltimoInput = EngineManager.TicksTranscurridos;
-            aux.X = 1;
-            aux.Y = 0;
-            this.Elemento.Mover(aux);
-        }
-        if (InputConfig.Aceptar && EngineManager.TicksTranscurridos > (this.UltimoInput + Delay))
-        {
-            this.UltimoInput = EngineManager.TicksTranscurridos;
-            this.VocalActual = (this.VocalActual + 1) % Vocales.Length;
-            this.Elemento.CambiarLetra(Vocales[VocalActual]);
-        }
-        if(EngineManager.TicksTranscurridos <= (this.UltimoInput + Delay))
-        {
-            this.Elemento.Tinte = Color.Gray;
-        }
-        else
-        {
-            this.Elemento.Tinte = Color.Red;
+        Boolean res = false;    // Al pedo, pero por las dudas...
+        Boolean izqP = InputConfig.IzquierdaPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+        Boolean derP = InputConfig.DerechaPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+        Boolean arrP = InputConfig.ArribaPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+        Boolean abjP = InputConfig.AbajoPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
 
+        if (izqP && !derP)
+        {
+            this.Elemento.Mover(izq);
+            res = true;
         }
+        if (derP && !izqP)
+        {
+            this.Elemento.Mover(der);
+            res = true;
+        }
+        if (arrP && !abjP)
+        {
+            this.Elemento.Mover(arr);
+            res = true;
+        }
+        if (abjP && !arrP)
+        {
+            this.Elemento.Mover(abj);
+            res = true;
+        }
+        return res;
+    }
+}
 
-        return true;
+public class LectorInputRichText : LectorInputDebug
+{
+    protected RichText elemento;
+    public LectorInputRichText(RichText elemento, int delayIni = 1, int delayRep = 1) : base(elemento, delayIni, delayRep)
+    {
+        this.elemento = elemento;
+    }
+
+    public override Boolean Procesar()
+    {
+        Boolean res = false;    // Al pedo, pero por las dudas...
+        Boolean izqP = InputConfig.IzquierdaPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+        Boolean derP = InputConfig.DerechaPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+        Boolean arrP = InputConfig.ArribaPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+        Boolean abjP = InputConfig.AbajoPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+        Boolean accAP = InputConfig.A_Presionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+
+        if (izqP && !derP)
+        {
+            this.Elemento.Mover(izq);
+            res = true;
+        }
+        if (derP && !izqP)
+        {
+            this.Elemento.Mover(der);
+            res = true;
+        }
+        if (arrP && !abjP)
+        {
+            this.Elemento.Mover(arr);
+            res = true;
+        }
+        if (abjP && !arrP)
+        {
+            this.Elemento.Mover(abj);
+            res = true;
+        }
+        if (accAP)
+        {
+            this.elemento.Reiniciar();
+            res = true;
+        }
+        return res;
     }
 }

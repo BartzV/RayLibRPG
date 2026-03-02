@@ -12,25 +12,62 @@ namespace RayLibRPG.Clases.Letras;
 /// <item>{e#} para los efectos.</item>
 /// </list>
 /// </summary>
-public class RichText : IActualizable, IRenderizable
+public class RichText : IActualizable, IRenderizable, IDesplazable
 {
     // Colores
     public Color[] Colores;         // Para los Letra.
     public Color[][] Paletas;       // Para los LetraPaleta.
     // Posiciones y Transformaciones
-    public Vector2 Posicion;        // Posición del primer caracter.
+    protected Vector2 _posicion;        // Posición del primer caracter.
     public Vector2 Amplitudes;      // Para TODAS las letras. No nos venimos con chiquitas.
     public Vector2 Rotaciones;      // Para TODAS las letras. No rota los textos, sólo las letras. No implementado.
     public Vector2 Espaciado;      // Para TODAS las letras. No rota los textos, sólo las letras. No implementado.
+    // Tiempo de Vida y Tiempos
+    public Int64 TiempoActivo;
+    public Int32 VelTexto = 8;
+    // Statics para optimizaciones
+    private static Color[] COLOR_NULL = new Color[1] { Color.White };
+    private static Color[][] PALETTE_NULL = new Color[1][] { [Color.White] };
     // Contenedores
     public List<Letra> Letras;
 
-    public RichText(String palabra, Color[] colores, Color[][] paletas, Vector2 posicion, Vector2 amplitud, Vector2? espaciado = null)
+    public Vector2 Posicion 
+    { 
+        get => this._posicion; 
+        set 
+        {
+            Vector2 desp = value - this._posicion;
+
+            this._posicion = value;
+            for(Int32 i = 0; i < this.Letras.Count; i++)
+            {
+                this.Letras[i].Posicion += desp;
+            }
+        } 
+    }
+    public float ZBuffer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+
+    public RichText(String palabra, Color[]? colores, Color[][]? paletas, Vector2 posicion, Vector2 amplitud, Vector2? espaciado = null)
     {
         this.Letras = new List<Letra>();
         this.Posicion = posicion;
-        this.Colores = colores;
-        this.Paletas = paletas;
+        if (colores is null || colores.Length == 0)
+        {
+            this.Colores = COLOR_NULL;
+        }
+        else
+        {
+            this.Colores = colores;
+        }
+        if (paletas is null || paletas.Length == 0)
+        {
+            this.Paletas = PALETTE_NULL;
+        }
+        else
+        {
+            this.Paletas = paletas;
+        }
         this.Espaciado = espaciado ?? Letra.TAM_LETRA;
         // Sin uso de momento.
         this.Amplitudes = amplitud;
@@ -60,7 +97,7 @@ public class RichText : IActualizable, IRenderizable
                         if (i >= palabra.Length)
                             return;
                         // Si no hay número, me retorna el 0 como failsafe.
-                        colorActual = Math.Clamp(Convert.ToInt32(palabra[i]) - '0', 0, colores.Length);
+                        colorActual = Math.Clamp(Convert.ToInt32(palabra[i]) - '0', 0, this.Colores.Length - 1);
                         tipoActual = GenerarLetra;
                         // Nos saltamos el '}'
                         i++;
@@ -70,7 +107,7 @@ public class RichText : IActualizable, IRenderizable
                         // Failsafe otra vez...
                         if (i >= palabra.Length)
                             return;
-                        paletaActual = Math.Clamp(Convert.ToInt32(palabra[i]) - '0', 0, paletas.Length);
+                        paletaActual = Math.Clamp(Convert.ToInt32(palabra[i]) - '0', 0, this.Paletas.Length - 1);
                         tipoActual = GenerarLetraPaleta;
                         // Nos saltamos el '}'
                         i++;
@@ -94,10 +131,9 @@ public class RichText : IActualizable, IRenderizable
                         continue;
 
                 }
-
             }
 
-            Letra l = tipoActual(c, colores[colorActual], paletas[paletaActual], efectoActual, posActual, amplitud, i);
+            Letra l = tipoActual(c, this.Colores[colorActual], this.Paletas[paletaActual], efectoActual, posActual, amplitud, i);
             this.Letras.Add(l);
             posActual.X += this.Espaciado.X * amplitud.X;
         }
@@ -118,6 +154,8 @@ public class RichText : IActualizable, IRenderizable
         return res;
     }
 
+    public void Reiniciar() => this.TiempoActivo = 0;
+
     public void Draw(float alfa)
     {
         this.Letras.ForEach(x => x.Draw(alfa));
@@ -125,11 +163,32 @@ public class RichText : IActualizable, IRenderizable
 
     public void Draw(float alfa, Vector2 desp, float zbuf)
     {
-        this.Letras.ForEach(x => x.Draw(alfa, desp, zbuf));
+        for (int i = 0; i < this.Letras.Count; i++)
+        {
+            if ((i * this.VelTexto) <= this.TiempoActivo)
+                this.Letras[i].Draw(alfa, desp, zbuf);
+        }
+
     }
 
     public void Update()
     {
         this.Letras.ForEach(x => x.Update());
+        this.TiempoActivo++;
+    }
+
+    public void Mover(Vector2 mov)
+    {
+        this.Posicion += mov;
+    }
+
+    public void Posicionar(Vector2 pos)
+    {
+        this.Posicion = pos;
+    }
+
+    public void Zoom(float zoom)
+    {
+        throw new NotImplementedException();
     }
 }
