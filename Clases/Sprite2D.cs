@@ -66,7 +66,7 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
             this.Tinte);
     }
     // Esto me trajo demasiados problemas. Creo que funciona. Te odio función Draw.
-    public void Draw(Single alfa, Vector2 desp, Single zbuf)
+    public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
     {
         // Por qué no uso un auxiliar para evitar alloc? Porque eso se aloja en stack, no en heap.
         Single escalaFinal = zbuf / this.ZBuffer;
@@ -74,16 +74,20 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
         this.Destino.X = _posInterpolada.X;
         this.Destino.Y = _posInterpolada.Y;
 
-        // Resulta que esto no andaba, lo dejo documentado por las dudas.
-        //this._desplazado.X = (this.Destino.X + desp.X) * escalaFinal;
-        //this._desplazado.Y = (this.Destino.Y + desp.Y) * escalaFinal;
-
         this._desplazado.X = this.Destino.X * escalaFinal + desp.X;
         this._desplazado.Y = this.Destino.Y * escalaFinal + desp.Y;
 
         this._desplazado.Width = this.Destino.Width * escalaFinal;
         this._desplazado.Height = this.Destino.Height * escalaFinal;
 
+        // 2. LOGICA DE CULLING
+        // Por qué no la mitad? Porque si el Sprite no tiene el centro en el medio, esto vuela a LCDSM
+        areaVisible.Width += this.Destino.Width;        
+        areaVisible.Height += this.Destino.Height;
+        // CheckCheck: ¿El rectángulo del sprite se toca con el de la capa?
+        if (!Raylib.CheckCollisionRecs(this._desplazado, areaVisible))
+            return 0; // No dibujé nada, me ahorré el DrawCall de la GPU. ¡Éxito!
+        
         this._centrado.X = this.Centro.X * escalaFinal;
         this._centrado.Y = this.Centro.Y * escalaFinal;
 
@@ -94,6 +98,8 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
             this._centrado,
             this.Rotacion,
             this.Tinte);
+
+        return 1;
     }
 
     public void Mover(Vector2 mov)
@@ -135,8 +141,9 @@ public class MultiSprite2D : IRenderizable, IActualizable
         }
     }
 
-    public void Draw(Single alfa, Vector2 desp, Single zbuf)
+    public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
     {
+        Int32 counter = 0;
         // El truco está en "disfrazar" al prototipo en cada iteración
         for (int i = 0; i < Posiciones.Length; i++)
         {
@@ -144,20 +151,17 @@ public class MultiSprite2D : IRenderizable, IActualizable
             this.Prototipo.PosicionActual = this.Posiciones[i];
 
             // Reutilizamos tu función de Draw que tanto odiás (pero que anda)
-            this.Prototipo.Draw(alfa, desp, zbuf);
+            counter += this.Prototipo.Draw(alfa, desp, zbuf, areaVisible);
         }
+        return counter;
     }
 
-    public void Draw(float alfa)
-    {
-        throw new NotImplementedException();
-    }
 }
 
 public interface IRenderizable
 {
-    public abstract void Draw(Single alfa);
-    public abstract void Draw(Single alfa, Vector2 desp, Single zbuf);
+    // Ahora devuelve cuántos elementos dibujó realmente
+    public abstract Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible);
 }
 
 public interface IActualizable
@@ -170,15 +174,6 @@ public interface IDesplazable
     Vector2 Posicion { get; set; }
     Single ZBuffer { get; set; }
     public abstract void Mover(Vector2 mov);
-    //{
-    //    this.Posicion += mov;
-    //}
     public abstract void Posicionar(Vector2 pos);
-    //{
-    //    this.Posicion = pos;
-    //}
     public abstract void Zoom(Single zoom);
-    //{
-    //    this.ZBuffer += zoom;
-    //}
 }

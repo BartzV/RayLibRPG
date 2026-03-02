@@ -1,5 +1,6 @@
 ﻿using Raylib_cs;
 using RayLibRPG.Clases.Config;
+using System.Runtime.CompilerServices;
 
 namespace RayLibRPG.Clases.Letras;
 
@@ -7,15 +8,18 @@ public static class LetraManager
 {
     private static Boolean _inicializado = false;
     private static Texture2D? _textura;
+    // Por qué un Char? Porque soy así de pelotudo. Ahora va a costar un huevo agregar íconos.
+    private static Dictionary<Char, Rectangle> Diccionario = new();
+
     public static Texture2D Textura
     {
         get => _textura ?? throw new InvalidOperationException("Inicializá el LetraManager!!!");
     }
-    public static Rectangle? GetRectangle(Char s)
+    public static Rectangle? GetRectangle(Char c)
     {
         if (!_inicializado)
             throw new InvalidOperationException("Inicializá el LetraManager!!!");
-        if (Diccionario.TryGetValue(s, out Rectangle rect))
+        if (Diccionario.TryGetValue(c, out Rectangle rect))
         {
             return rect;
         }
@@ -31,11 +35,6 @@ public static class LetraManager
         return Diccionario[' ']!;
     }
 
-    // Por qué un Char? Porque soy así de pelotudo. Ahora va a costar un huevo agregar íconos.
-    private static Dictionary<Char, Rectangle> Diccionario = new()
-    {
-    };
-
     public static void Inicializar()
     {
         if (_inicializado) return;
@@ -47,15 +46,19 @@ public static class LetraManager
         // Fila 1 (Y=8): Minúsculas y tildes raras
         // Fila 2 (Y=16): Números, símbolos matemáticos, etc.
         // Fila 3 (Y=24): Símbolos raros
+        // Fila 4 (Y=32): Símbolos aún más raros jaja
 
         MapearFila("ABCDEFGHIJKLMNOPQRSTUVWXYZÑÁÉÍÓÚ", 0);
         MapearFila("abcdefghijklmnopqrstuvwxyzñáéíóú", 8);
         MapearFila("0123456789+-*/%=$#@            Ü", 16);
         MapearFila(".,:;_…\"'¿?¡!()[]<>✓            ü", 24);
+        // Fila Y=32, Y=40 e Y=48 reservada para símbolos
+        MapearSimbolos();
         MapearFila("~", 56);
 
         // El espacio siempre es especial (no ocupa lugar en el atlas)
-        if (!Diccionario.ContainsKey(' ')) Diccionario.Add(' ', new Rectangle(0, 0, 0, 0));
+        if (!Diccionario.ContainsKey(' ')) 
+            Diccionario.Add(' ', new Rectangle(0, 0, 0, 0));
 
         _inicializado = true;
     }
@@ -65,9 +68,9 @@ public static class LetraManager
     /// </summary>
     private static void MapearFila(string fila, int posY)
     {
-        for (int i = 0; i < fila.Length; i++)
+        for (Int32 i = 0; i < fila.Length; i++)
         {
-            char c = fila[i];
+            Char c = fila[i];
 
             // Si es un espacio en el mapa, lo salteamos para no pisar el ' ' real
             // o si ya existe el carácter por alguna razón.
@@ -75,5 +78,14 @@ public static class LetraManager
 
             Diccionario.Add(c, new Rectangle(i * 8, posY, 8, 8));
         }
+    }
+
+    private static void MapearSimbolos()
+    {
+        // Corazón
+        Diccionario.Add('\uFF00', new Rectangle(0, 32, Letra.TAM_LETRA));
+        // Escudo
+        Diccionario.Add('\uFF01', new Rectangle(8, 32, Letra.TAM_LETRA));
+
     }
 }

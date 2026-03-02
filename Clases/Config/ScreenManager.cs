@@ -52,17 +52,17 @@ internal static class ScreenManager
     {
         // 1. Usamos C# puro para saber el tamaño del monitor principal
         // Esto funciona ANTES de cualquier ventana abierta.
-        int monitorAncho = 1920;
-        int monitorAlto = 1080;
+        int monitorAncho = 512 * 2;
+        int monitorAlto = 288 * 2;
 
         // 2. Configuramos los Flags para que no tenga bordes
-        Raylib.SetConfigFlags(ConfigFlags.UndecoratedWindow);
+        //Raylib.SetConfigFlags(ConfigFlags.MaximizedWindow);
 
         // 3. Inicializamos con el tamaño real del monitor
         Raylib.InitWindow(monitorAncho, monitorAlto, "Bartz RPG");
 
         // 4. Forzamos la posición arriba a la izquierda para que no quede desplazada
-        Raylib.SetWindowPosition(0, 0);
+        //Raylib.SetWindowPosition(0, 0);
 
         // 5. Corremos tu lógica de escalado
         CambiarResolucion(monitorAncho, monitorAlto);

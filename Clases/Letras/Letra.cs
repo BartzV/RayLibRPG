@@ -27,6 +27,8 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
     protected Int32 _actualAlfaUpdate = 0;
     protected Int32 _tiempoVida = 0;
     public Vector2 Amplitud;
+    // Usado para RichText
+    public Int64 MomentoAparicion = 0;
 
     public Color Tinte
     {
@@ -65,7 +67,7 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
         // Me fijo si está inicializado. No lo está? Lo inicializa la clase.
         // En teoría, esto debe de estar vivo 24/7, LetraManager no se puede apagar...
         LetraManager.Inicializar();
-        // Failsafe. Arreglar más tarde (cuando tenga ganas)
+        // Failsafe.
         Rectangle rect = LetraManager.GetRectangle(caracter) ?? LetraManager.GetEspacio();
         this.Amplitud = amplitudes;
         this.Sprite = new Sprite2D(LetraManager.Textura, rect, new Rectangle(posicion, amplitudes * 8));
@@ -83,14 +85,9 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
         this.Sprite.Fuente = rect;
     }
 
-    public virtual void Draw(float alfa)
+    public virtual Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
     {
-        this.Sprite.Draw(alfa);
-    }
-
-    public virtual void Draw(float alfa, Vector2 desp, float zbuf)
-    {
-        this.Sprite.Draw(alfa, desp, zbuf);
+        return this.Sprite.Draw(alfa, desp, zbuf, areaVisible);
     }
 
     public virtual void Update()
@@ -108,7 +105,7 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
         else if (Efecto == EfectoLetra.Ola)
         {
             Double gamma = (this._tiempoVida % 60) / 60.0 * Math.PI;
-            Single desplazamientoY = (Single)Math.Sin(gamma) * 4f - 2;
+            Single desplazamientoY = (Single)Math.Sin(gamma) * 2f - 1;
             this.Sprite.PosicionActual = this.Posicion + new Vector2(0, desplazamientoY);
         }
     }
@@ -128,4 +125,42 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
         this.ZBuffer += zoom;
     }
 
+}
+
+
+public class BarraProgreso : IActualizable, IRenderizable
+{
+    private Sprite2D _fondo;
+    private Sprite2D _frente;
+    public Single Porcentaje; // 0.0f a 1.0f
+
+    public BarraProgreso(Vector2 pos, Vector2 tamaño)
+    {
+        Texture2D atlas = LetraManager.Textura;
+        Rectangle fuenteBlanca = LetraManager.GetRectangle('_') ?? throw new InvalidOperationException();
+        // El fondo suele ser negro o gris oscuro
+        _fondo = new Sprite2D(atlas, fuenteBlanca, new Rectangle(pos.X, pos.Y, tamaño.X, tamaño.Y));
+        _fondo.Tinte = new Color(40, 40, 40, 255);
+
+        // El frente es el que se estira
+        _frente = new Sprite2D(atlas, fuenteBlanca, new Rectangle(pos.X, pos.Y, tamaño.X, tamaño.Y));
+        _frente.Tinte = Color.Green;
+        this.Porcentaje = 1.0f;
+    }
+
+    public void Update() { /* Lógica de interpolación si querés que la barra baje suave */ }
+
+    public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
+    {
+        Int32 c = 0;
+        c += _fondo.Draw(alfa, desp, zbuf, areaVisible);
+
+        // Ajustamos el ancho del frente antes de dibujar
+        // Ojo: Si usás el Centro en el medio, esto se va a achicar hacia el centro.
+        // Para barras, el Centro (Pivot) tiene que estar en (0, 0).
+        _frente.Destino.Width = _fondo.Destino.Width * Porcentaje;
+
+        c += _frente.Draw(alfa, desp, zbuf, areaVisible);
+        return c;
+    }
 }

@@ -10,6 +10,7 @@ namespace RayLibRPG.Clases.Letras;
 /// <item>{p#} para dibujar caracteres cuyo colores cambia.</item>
 /// <item>{s} para salto de línea.</item>
 /// <item>{e#} para los efectos.</item>
+/// <item>{t##} para espacios a tabular (para no dibujar espacios vacíos)</item>
 /// </list>
 /// </summary>
 public class RichText : IActualizable, IRenderizable, IDesplazable
@@ -31,24 +32,24 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
     // Contenedores
     public List<Letra> Letras;
 
-    public Vector2 Posicion 
-    { 
-        get => this._posicion; 
-        set 
+    public Vector2 Posicion
+    {
+        get => this._posicion;
+        set
         {
             Vector2 desp = value - this._posicion;
 
             this._posicion = value;
-            for(Int32 i = 0; i < this.Letras.Count; i++)
+            for (Int32 i = 0; i < this.Letras.Count; i++)
             {
                 this.Letras[i].Posicion += desp;
             }
-        } 
+        }
     }
+
     public float ZBuffer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-
-    public RichText(String palabra, Color[]? colores, Color[][]? paletas, Vector2 posicion, Vector2 amplitud, Vector2? espaciado = null)
+    public RichText(String palabra, Color[]? colores, Color[][]? paletas, Vector2 posicion, Vector2 amplitud, Int32 velTexto = 1, Vector2? espaciado = null)
     {
         this.Letras = new List<Letra>();
         this.Posicion = posicion;
@@ -68,6 +69,7 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
         {
             this.Paletas = paletas;
         }
+        this.VelTexto = velTexto;
         this.Espaciado = espaciado ?? Letra.TAM_LETRA;
         // Sin uso de momento.
         this.Amplitudes = amplitud;
@@ -77,6 +79,7 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
         EfectoLetra efectoActual = EfectoLetra.Ninguno;
         Vector2 posActual = posicion;
         Func<Char, Color, Color[], EfectoLetra, Vector2, Vector2, Int32, Letra> tipoActual = GenerarLetra;
+        Int64 cronometroInterno = 0; // Este es nuestro "puntero" de tiempo
 
         for (Int32 i = 0; i < palabra.Length; i++)
         {
@@ -91,6 +94,7 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
                 c = palabra[i];
                 switch (c)
                 {
+                    // Color Simple
                     case 'c':
                         i++;
                         // Failsafe otra vez...
@@ -102,6 +106,7 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
                         // Nos saltamos el '}'
                         i++;
                         continue;
+                    // Color de Paleta
                     case 'p':
                         i++;
                         // Failsafe otra vez...
@@ -112,12 +117,14 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
                         // Nos saltamos el '}'
                         i++;
                         continue;
+                    // Salto de línea
                     case 's':
                         // Nos saltamos el '}'
                         i++;
                         posActual.X = posicion.X;                          // CR
                         posActual.Y += this.Espaciado.Y * amplitud.Y;      // LF
                         continue;
+                    // Efectos: 0 = Normal, 1 = Tembleque, 2 = Oleaje
                     case 'e':
                         i++;
                         // Failsafe otra vez...
@@ -127,19 +134,49 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
                         // Nos saltamos el '}'
                         i++;
                         continue;
+                    // Tab espacios, para no meter espacios a lo loco
+                    case 't':
+                        i += 2;
+                        // Failsafe otra vez...
+                        if (i >= palabra.Length)
+                            return;
+                        Int32 saltos = Math.Max(Convert.ToInt32(palabra[(i - 1)..(i + 1)]), 0);
+                        posActual.X += this.Espaciado.X * amplitud.X * saltos;
+                        // Nos saltamos el '}'
+                        i++;
+                        continue;
+                    // Íconos (y funciona!)
+                    case 'i':
+                        i += 2;
+                        // Failsafe otra vez...
+                        if (i >= palabra.Length)
+                            return;
+                        Int16 simbolo = Math.Max(Convert.ToInt16(palabra[(i - 1)..(i + 1)], 16), (Int16)0);
+                        c = (Char)(0xFF00 | simbolo);
+                        // Nos saltamos el '}'
+                        i++;
+                        break;
+                    case 'w': // {w05} -> Espera 50 frames (o lo que quieras)
+                        i += 2;
+                        Int32 espera = (Convert.ToInt32(palabra[(i - 1)..(i + 1)])) * 10; // Multiplicador de pausa
+                        cronometroInterno += espera;
+                        i++;
+                        continue;
                     default:
                         continue;
 
                 }
             }
-
+            // Creamos y agregamos la letra
             Letra l = tipoActual(c, this.Colores[colorActual], this.Paletas[paletaActual], efectoActual, posActual, amplitud, i);
+            l.MomentoAparicion = cronometroInterno;
             this.Letras.Add(l);
+            // Seguimos...
             posActual.X += this.Espaciado.X * amplitud.X;
+            cronometroInterno += this.VelTexto;
         }
 
     }
-
 
     public static Letra GenerarLetra(Char letra, Color color, Color[] paleta, EfectoLetra efecto, Vector2 posicion, Vector2 amplitud, Int32 alfa)
     {
@@ -147,6 +184,7 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
         res.Efecto = efecto;
         return res;
     }
+
     public static Letra GenerarLetraPaleta(Char letra, Color color, Color[] paleta, EfectoLetra efecto, Vector2 posicion, Vector2 amplitud, Int32 alfa)
     {
         LetraPaleta res = new LetraPaleta(letra, posicion, amplitud, paleta, 7, alfa);
@@ -155,20 +193,20 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
     }
 
     public void Reiniciar() => this.TiempoActivo = 0;
+    public void Terminar() => this.TiempoActivo = Int32.MaxValue;
 
-    public void Draw(float alfa)
+    public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
     {
-        this.Letras.ForEach(x => x.Draw(alfa));
-    }
-
-    public void Draw(float alfa, Vector2 desp, float zbuf)
-    {
-        for (int i = 0; i < this.Letras.Count; i++)
+        Int32 counter = 0;
+        for (Int32 i = 0; i < this.Letras.Count; i++)
         {
-            if ((i * this.VelTexto) <= this.TiempoActivo)
-                this.Letras[i].Draw(alfa, desp, zbuf);
+            // Ya no comparamos con el índice "i", sino con su propio tiempo
+            if (this.Letras[i].MomentoAparicion <= this.TiempoActivo)
+            {
+                counter += this.Letras[i].Draw(alfa, desp, zbuf, areaVisible);
+            }
         }
-
+        return counter;
     }
 
     public void Update()
@@ -187,7 +225,8 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
         this.Posicion = pos;
     }
 
-    public void Zoom(float zoom)
+    // No le des bola, no voy a implementar esta poronga.
+    public void Zoom(Single zoom)
     {
         throw new NotImplementedException();
     }

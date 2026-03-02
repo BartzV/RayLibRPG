@@ -35,7 +35,6 @@ public class Program
                 tiempoAcumulado -= ConfigManager.TICKRATE;
             }
 
-            // A partir de ahora, contadores fuera del bucle.
             Single alfa = (Single)(tiempoAcumulado / ConfigManager.TICKRATE);
             Draw(alfa);
             EngineManager.FramesTranscurridos++;
@@ -51,9 +50,7 @@ public class Program
         EngineManager.Inicializar();       // Importante. Maneja los ticks, la resolución y mucho más.
         LetraManager.Inicializar();        // Importante. Maneja las letras.
 
-        //ScreenManager.CambiarResolucion(512 * 3, 288 * 3);
         ScreenManager.SetFPS(FPS_Options.FPS_120);
-
         ScreenManager.LimpiarCapas();
 
         EscenarioActual = new EscenarioPruebaLetras();

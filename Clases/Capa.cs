@@ -78,18 +78,23 @@ public class Capa : IDisposable
         this.Posicion = nuevaPosicion;
         CambiarResolucion(this.Ancho, this.Alto);
     }
-    public void Renderizar(Single alfa, Int64 framesTotales)
+    public Int32 Renderizar(Single alfa, Int64 framesTotales)
     {
-        if (!this.Activa) return;
+        if (!this.Activa) return 0;
+        Int32 counter = 0;
         Raylib.BeginTextureMode(this.TexturaInterna);
         Raylib.ClearBackground(this.Fondo);
-        for (Int32 i = 0; i < Elementos.Count; i++)
-        {
-            Elementos[i].Draw(alfa, this.DesplazamientoCamara, this.FactorProfundidad);
-        }
-        FramesTranscurridos++;
-        Raylib.EndTextureMode();
 
+        // Definimos el área visible de la capa (su tamaño interno)
+        Rectangle areaVisible = new Rectangle(0, 0, this.Ancho, this.Alto);
+
+        for (Int32 i = 0; i < this.Elementos.Count; i++)
+        {
+            counter += this.Elementos[i].Draw(alfa, this.DesplazamientoCamara, this.FactorProfundidad, areaVisible);
+        }
+        this.FramesTranscurridos++;
+        Raylib.EndTextureMode();
+        return counter;
     }
 
     public void InsertarElemento(IRenderizable elemento)
