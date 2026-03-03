@@ -9,6 +9,8 @@ public class Capa : IDisposable
 {
     // Forma de identificarlo
     public String Nombre;
+    private bool _sucio = false; // Se movió algo para el frente?
+    public Boolean DebeReordenar { get => this._sucio; }
 
     private Boolean _disposed = false;
     // Profundizar...
@@ -83,7 +85,7 @@ public class Capa : IDisposable
         if (!this.Activa) return 0;
         Int32 counter = 0;
         Raylib.BeginTextureMode(this.TexturaInterna);
-        Raylib.ClearBackground(this.Fondo);
+        //Raylib.ClearBackground(this.Fondo);
 
         // Definimos el área visible de la capa (su tamaño interno)
         Rectangle areaVisible = new Rectangle(0, 0, this.Ancho, this.Alto);
@@ -94,12 +96,20 @@ public class Capa : IDisposable
         }
         this.FramesTranscurridos++;
         Raylib.EndTextureMode();
+
+        if (_sucio)
+        {
+            this.Elementos.Sort((x, y) => y.Prioridad.CompareTo(x.Prioridad));
+            _sucio = false;
+        }
+
         return counter;
     }
 
     public void InsertarElemento(IRenderizable elemento)
     {
         this.Elementos.Add(elemento);
+        this._sucio = true;
     }
     public void InsertarElementos(IRenderizable[] elemento)
     {

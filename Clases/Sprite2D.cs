@@ -5,24 +5,43 @@ namespace RayLibRPG.Clases;
 
 public class Sprite2D : IRenderizable, IActualizable, IDesplazable
 {
+    // Estado
+    public Boolean _eliminado = false;
+    public Boolean Eliminado
+    {
+        get => this._eliminado;
+        set
+        {
+            this._eliminado = value;
+            this.Activo = !value;
+        }
+    }
+    public Boolean Activo = true;
+
     public Texture2D Textura;
     // OJO! Rectangle es de RayLib, no de System.Drawing!
     public Rectangle Fuente;
     public Rectangle Destino;
-    public Single FactorProfundidad;
+    protected Single _escala;
+    protected Single _prioridad;
     // Posiciones en el mundo real
     public Vector2 PosicionActual;
     public Vector2 PosicionAnterior;
     // IDesplazable
     public Vector2 Posicion
     {
-        get => PosicionActual;
-        set => PosicionActual = value;
+        get => this.PosicionActual;
+        set => this.PosicionActual = value;
     }
-    public Single ZBuffer
+    public Single Escala
     {
-        get => FactorProfundidad;
-        set => FactorProfundidad = value;
+        get => this._escala;
+        set => this._escala = value;
+    }
+    public Single Prioridad
+    {
+        get => this._prioridad;
+        set => this._prioridad = value;
     }
     // Punto de origen para rotaciones y escalados
     public Vector2 Centro;
@@ -43,36 +62,25 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
         this.Centro = new Vector2(destino.Width / 2, destino.Height / 2);
         this.Rotacion = 0.0f;
         this.Tinte = Color.White;
-        this.ZBuffer = 1.0F;
+        this.Escala = 1.0F;
         this.PosicionActual = new Vector2(destino.X, destino.Y);
         this.PosicionAnterior = new Vector2(destino.X, destino.Y);
     }
     public void Update()
     {
-        this.PosicionAnterior = this.PosicionActual;
-    }
-    public void Draw(Single alfa)
-    {
-        this._posInterpolada = Vector2.Lerp(this.PosicionAnterior, this.PosicionActual, alfa);
-        this.Destino.X = _posInterpolada.X;
-        this.Destino.Y = _posInterpolada.Y;
-
-        Raylib.DrawTexturePro(
-            this.Textura,
-            this.Fuente,
-            this.Destino,
-            this.Centro,
-            this.Rotacion,
-            this.Tinte);
+        if (this.Activo)
+            this.PosicionAnterior = this.PosicionActual;
     }
     // Esto me trajo demasiados problemas. Creo que funciona. Te odio función Draw.
     public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
     {
+        if (!this.Activo)
+            return 0;
         // Por qué no uso un auxiliar para evitar alloc? Porque eso se aloja en stack, no en heap.
-        Single escalaFinal = zbuf / this.ZBuffer;
+        Single escalaFinal = zbuf / this.Escala;
         this._posInterpolada = Vector2.Lerp(this.PosicionAnterior, this.PosicionActual, alfa);
-        this.Destino.X = _posInterpolada.X;
-        this.Destino.Y = _posInterpolada.Y;
+        this.Destino.X = this._posInterpolada.X;
+        this.Destino.Y = this._posInterpolada.Y;
 
         this._desplazado.X = this.Destino.X * escalaFinal + desp.X;
         this._desplazado.Y = this.Destino.Y * escalaFinal + desp.Y;
@@ -82,12 +90,12 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
 
         // 2. LOGICA DE CULLING
         // Por qué no la mitad? Porque si el Sprite no tiene el centro en el medio, esto vuela a LCDSM
-        areaVisible.Width += this.Destino.Width;        
+        areaVisible.Width += this.Destino.Width;
         areaVisible.Height += this.Destino.Height;
         // CheckCheck: ¿El rectángulo del sprite se toca con el de la capa?
         if (!Raylib.CheckCollisionRecs(this._desplazado, areaVisible))
             return 0; // No dibujé nada, me ahorré el DrawCall de la GPU. ¡Éxito!
-        
+
         this._centrado.X = this.Centro.X * escalaFinal;
         this._centrado.Y = this.Centro.Y * escalaFinal;
 
@@ -114,7 +122,7 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
 
     public void Zoom(Single zoom)
     {
-        this.ZBuffer += zoom;
+        this.Escala += zoom;
     }
 
 }
@@ -124,6 +132,13 @@ public class MultiSprite2D : IRenderizable, IActualizable
     public Sprite2D Prototipo; // Usamos un sprite base para sacar los datos
     public Vector2[] Posiciones;
     public Vector2[] PosicionesAnteriores;
+
+    private Single _prioridad;
+    public Single Prioridad
+    {
+        get => this._prioridad;
+        set => this._prioridad = value;
+    }
 
     public MultiSprite2D(Sprite2D prototipo, int cantidad)
     {
@@ -156,12 +171,15 @@ public class MultiSprite2D : IRenderizable, IActualizable
         return counter;
     }
 
+
 }
 
 public interface IRenderizable
 {
     // Ahora devuelve cuántos elementos dibujó realmente
     public abstract Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible);
+    // Profundidad, ya que Draw no tiene la profundidad, y Raylib.DrawTexturePro no la toma.
+    public abstract Single Prioridad { get; set; }
 }
 
 public interface IActualizable
@@ -172,7 +190,7 @@ public interface IActualizable
 public interface IDesplazable
 {
     Vector2 Posicion { get; set; }
-    Single ZBuffer { get; set; }
+    Single Escala { get; set; }
     public abstract void Mover(Vector2 mov);
     public abstract void Posicionar(Vector2 pos);
     public abstract void Zoom(Single zoom);

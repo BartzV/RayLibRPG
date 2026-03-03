@@ -15,10 +15,15 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
     public Char Caracter;
     protected Color _tinte;
     // IDesplazable
-    public Single ZBuffer
+    private Single _escala;
+    public Single Escala
     {
-        get => this.Sprite.ZBuffer;
-        set => this.Sprite.ZBuffer = value;
+        get => this._escala;
+        set
+        {
+            this._escala = value;
+            this.Sprite.Escala = value;
+        }
     }
     // Para efectos. Quien lo use para lógica lo mato.
     public EfectoLetra Efecto = EfectoLetra.Ninguno;
@@ -59,6 +64,16 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
         {
             this._posicion = value;
             this.Sprite.Posicion = value;
+        }
+    }
+    private Single _prioridad;
+    public Single Prioridad
+    {
+        get => _prioridad;
+        set
+        {
+            this._prioridad = value;
+            this.Sprite.Prioridad = value;
         }
     }
 
@@ -122,54 +137,8 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
 
     public void Zoom(Single zoom)
     {
-        this.ZBuffer += zoom;
+        this.Escala += zoom;
     }
 
 }
 
-
-public class BarraProgreso : IActualizable, IRenderizable
-{
-    private Sprite2D _fondo;
-    private Sprite2D _frente;
-    private Single _porcentaje;
-    public Single Porcentaje // 0.0f a 1.0f
-    {
-        get => this._porcentaje;
-        set => Math.Clamp(value, 0f, 1f);
-    }
-
-    public BarraProgreso(Vector2 pos, Vector2 tamaño, Color frente, Color fondo)
-    {
-        Texture2D atlas = LetraManager.Textura;
-        Rectangle fuenteBlanca = LetraManager.GetRectangle('\uFFFF') ?? throw new InvalidOperationException();
-
-        // El fondo suele ser negro o gris oscuro
-        _fondo = new Sprite2D(atlas, fuenteBlanca, new Rectangle(pos.X, pos.Y, tamaño.X, tamaño.Y));
-        _fondo.Tinte = fondo;
-
-        // El frente es el que se estira
-        _frente = new Sprite2D(atlas, fuenteBlanca, new Rectangle(pos.X, pos.Y, tamaño.X, tamaño.Y));
-        _frente.Tinte = frente;
-        this.Porcentaje = 1.0f;
-    }
-
-    public void Update()
-    {
-        // Pendiente...
-    }
-
-    public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
-    {
-        Int32 c = 0;
-        c += _fondo.Draw(alfa, desp, zbuf, areaVisible);
-
-        // Ajustamos el ancho del frente antes de dibujar
-        // Ojo: Si usás el Centro en el medio, esto se va a achicar hacia el centro.
-        // Para barras, el Centro (Pivot) tiene que estar en (0, 0).
-        _frente.Destino.Width = _fondo.Destino.Width * Porcentaje;
-
-        c += _frente.Draw(alfa, desp, zbuf, areaVisible);
-        return c;
-    }
-}

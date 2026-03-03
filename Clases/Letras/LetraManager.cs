@@ -1,5 +1,6 @@
 ﻿using Raylib_cs;
 using RayLibRPG.Clases.Config;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace RayLibRPG.Clases.Letras;
@@ -86,7 +87,11 @@ public static class LetraManager
         Diccionario.Add('\uFF00', new Rectangle(0, 32, Letra.TAM_LETRA));
         // Escudo
         Diccionario.Add('\uFF01', new Rectangle(8, 32, Letra.TAM_LETRA));
-        // Barra
-        Diccionario.Add('\uFFFF', new Rectangle(8, 56, Letra.TAM_LETRA));
+        // Marco de Barra
+        Diccionario.Add('\uFBF0', new Rectangle(16, 56, Letra.TAM_LETRA));
+        Diccionario.Add('\uFBF1', new Rectangle(24, 56, new Vector2(1, 8)));
+        Diccionario.Add('\uFBF2', new Rectangle(24, 56, Letra.TAM_LETRA));
+        // Barra en cuestión
+        Diccionario.Add('\uFBF3', new Rectangle(8, 56, new Vector2(1, 8)));
     }
 }

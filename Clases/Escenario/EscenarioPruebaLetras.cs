@@ -17,7 +17,6 @@ namespace RayLibRPG.Clases.Escenario
         public List<Letra> Letras = new();
         public List<BarraProgreso> Barras = new();
 
-        public List<IRenderizable> EscenarioS = new();
         public List<IActualizable> EscenarioU = new();
 
         public override void Initialize()
@@ -27,6 +26,7 @@ namespace RayLibRPG.Clases.Escenario
             //this.InicializarRich();
             //this.InicializarLetra();
             this.InicializarBarra();
+
         }
 
         public override void Draw(float alfa)
@@ -49,23 +49,37 @@ namespace RayLibRPG.Clases.Escenario
 
         public void InicializarBarra()
         {
-            BarraProgreso bar = new(Vector2.One, new Vector2(64, 4), Color.Green, Color.Red);
-            bar.Porcentaje = 0.5f;
-            this.Barras.Add(bar);
+            BarraProgreso bar1 = new(new Vector2(0, 0), 128, Color.Green, Color.Red, Color.Gold);
+            bar1.Porcentaje = 0.75f;
+            bar1.Prioridad = 1000;
+            this.Barras.Add(bar1);
 
-            this.EscenarioU.Add(bar);
-            this.Capas[0].InsertarElemento(bar);
+            BarraProgreso bar2 = new(new Vector2(0, 20), 8, Color.SkyBlue, Color.DarkBlue, Color.Beige);
+            bar2.Porcentaje = 0.33f;
+            bar2.Prioridad = 1000;
+            this.Barras.Add(bar2);
+
+            RichText rich = new("{c1}100{c0}/{c2}100", [new Color(255, 255, 255), new Color(204, 255, 204), new Color(255, 204, 255)], null, new Vector2(0, 0), Vector2.One, 1);
+            rich.Prioridad = 101;
+
+            this.EscenarioU.Add(rich);
+            this.EscenarioU.Add(bar1);
+            this.EscenarioU.Add(bar2);
+
+            this.Capas[0].InsertarElemento(rich);
+            this.Capas[0].InsertarElemento(bar1);
+            this.Capas[0].InsertarElemento(bar2);
         }
 
         public void InicializarEscenario()
         {
             Texture2D textura = Texture2DManager.LoadTexture(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigManager.RUTA_BG_BOSQUE), "BGBosque");
-            Sprite2D montaña1 = 
-                new Sprite2D(textura, 
+            Sprite2D montaña1 =
+                new Sprite2D(textura,
                     // Fuente
-                    new Rectangle(0, 16, 16 * 6, 16 * 3), 
+                    new Rectangle(0, 16, 16 * 6, 16 * 3),
                     // Destino
-                    new Rectangle(-ConfigManager.WIDTH / 2, 0, 16 * 6, 16 * 3)); 
+                    new Rectangle(-ConfigManager.WIDTH / 2, 0, 16 * 6, 16 * 3));
             MultiSprite2D multiMontaña1 = new(montaña1, 4);
 
             this.EscenarioU.Add(montaña1);
@@ -87,26 +101,19 @@ namespace RayLibRPG.Clases.Escenario
         public void InicializarLetra()
         {
             Letra l = new Letra('A', Vector2.Zero, Vector2.One, Color.Red);
-            l.ZBuffer = 1;
+            l.Escala = 1;
 
             this.Letras.Add(l);
             this.Lector = new LectorInputLetra(l);
+            this.EscenarioU.Add(l);
             this.Capas[0].InsertarElemento(l);
         }
 
         public override void Update()
         {
-            for(Int32 i = 0; i < EscenarioS.Count; i++)
+            for (Int32 i = 0; i < EscenarioU.Count; i++)
             {
                 this.EscenarioU[i].Update();
-            }
-            for (Int32 i = 0; i < Letras.Count; i++)
-            {
-                this.Letras[i].Update();
-            }
-            for (Int32 i = 0; i < Richs.Count; i++)
-            {
-                this.Richs[i].Update();
             }
 
             // 2. Actualizamos los contadores de las teclas

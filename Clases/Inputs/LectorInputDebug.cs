@@ -6,11 +6,11 @@ namespace RayLibRPG.Clases.Inputs;
 /// <summary>
 /// Ejemplo. No tomar en serio.
 /// </summary>
-public class LectorInputDebug : LectorInput
+public class LectorInputDebug<T> : LectorInput where T : IRenderizable, IDesplazable
 {
-    protected IDesplazable Elemento;
+    protected T Elemento;
 
-    public LectorInputDebug(IDesplazable elemento, int delayIni = 1, int delayRep = 1)
+    public LectorInputDebug(T elemento, int delayIni = 1, int delayRep = 1)
     {
         this.Elemento = elemento;
         this.DELAY_INICIAL = delayIni;

@@ -3,7 +3,7 @@ using RayLibRPG.Clases.Letras;
 
 namespace RayLibRPG.Clases.Inputs;
 
-public class LectorInputRichText : LectorInputDebug
+public class LectorInputRichText : LectorInputDebug<RichText>
 {
     protected RichText elemento;
     public LectorInputRichText(RichText elemento, int delayIni = 1, int delayRep = 1) : base(elemento, delayIni, delayRep)

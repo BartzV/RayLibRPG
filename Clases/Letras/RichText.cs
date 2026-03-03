@@ -1,4 +1,5 @@
 ﻿using Raylib_cs;
+using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 
 namespace RayLibRPG.Clases.Letras;
@@ -23,6 +24,34 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
     public Vector2 Amplitudes;      // Para TODAS las letras. No nos venimos con chiquitas.
     public Vector2 Rotaciones;      // Para TODAS las letras. No rota los textos, sólo las letras. No implementado.
     public Vector2 Espaciado;      // Para TODAS las letras. No rota los textos, sólo las letras. No implementado.
+
+    protected Single _escala;
+    protected Single _prioridad;
+
+    // No funciona correctamente. Está reservado para efecto de Fade In y Fade Out
+    public Single Escala
+    {
+        get => this._escala;
+        set
+        {
+            this._escala = value;
+            this.Letras.ForEach((x) => x.Escala = value);
+        }
+    }
+    
+    public Single Prioridad
+    {
+        get => this._prioridad;
+        set
+        {
+            this._prioridad = value;
+            for (Int32 i = 0; i < this.Letras.Count; i++)
+            {
+                this.Letras[i].Prioridad = value;
+            }
+        }
+    }
+
     // Tiempo de Vida y Tiempos
     public Int64 TiempoActivo;
     public Int32 VelTexto = 8;
@@ -47,7 +76,6 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
         }
     }
 
-    public float ZBuffer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
     public RichText(String palabra, Color[]? colores, Color[][]? paletas, Vector2 posicion, Vector2 amplitud, Int32 velTexto = 1, Vector2? espaciado = null)
     {
