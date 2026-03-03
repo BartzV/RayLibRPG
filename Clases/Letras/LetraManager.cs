@@ -86,6 +86,7 @@ public static class LetraManager
         Diccionario.Add('\uFF00', new Rectangle(0, 32, Letra.TAM_LETRA));
         // Escudo
         Diccionario.Add('\uFF01', new Rectangle(8, 32, Letra.TAM_LETRA));
-
+        // Barra
+        Diccionario.Add('\uFFFF', new Rectangle(8, 56, Letra.TAM_LETRA));
     }
 }

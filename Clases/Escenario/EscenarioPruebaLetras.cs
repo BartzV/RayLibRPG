@@ -49,7 +49,8 @@ namespace RayLibRPG.Clases.Escenario
 
         public void InicializarBarra()
         {
-            BarraProgreso bar = new(Vector2.One, new Vector2(64, 8));
+            BarraProgreso bar = new(Vector2.One, new Vector2(64, 4), Color.Green, Color.Red);
+            bar.Porcentaje = 0.5f;
             this.Barras.Add(bar);
 
             this.EscenarioU.Add(bar);

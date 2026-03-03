@@ -132,23 +132,32 @@ public class BarraProgreso : IActualizable, IRenderizable
 {
     private Sprite2D _fondo;
     private Sprite2D _frente;
-    public Single Porcentaje; // 0.0f a 1.0f
+    private Single _porcentaje;
+    public Single Porcentaje // 0.0f a 1.0f
+    {
+        get => this._porcentaje;
+        set => Math.Clamp(value, 0f, 1f);
+    }
 
-    public BarraProgreso(Vector2 pos, Vector2 tamaño)
+    public BarraProgreso(Vector2 pos, Vector2 tamaño, Color frente, Color fondo)
     {
         Texture2D atlas = LetraManager.Textura;
-        Rectangle fuenteBlanca = LetraManager.GetRectangle('_') ?? throw new InvalidOperationException();
+        Rectangle fuenteBlanca = LetraManager.GetRectangle('\uFFFF') ?? throw new InvalidOperationException();
+
         // El fondo suele ser negro o gris oscuro
         _fondo = new Sprite2D(atlas, fuenteBlanca, new Rectangle(pos.X, pos.Y, tamaño.X, tamaño.Y));
-        _fondo.Tinte = new Color(40, 40, 40, 255);
+        _fondo.Tinte = fondo;
 
         // El frente es el que se estira
         _frente = new Sprite2D(atlas, fuenteBlanca, new Rectangle(pos.X, pos.Y, tamaño.X, tamaño.Y));
-        _frente.Tinte = Color.Green;
+        _frente.Tinte = frente;
         this.Porcentaje = 1.0f;
     }
 
-    public void Update() { /* Lógica de interpolación si querés que la barra baje suave */ }
+    public void Update()
+    {
+        // Pendiente...
+    }
 
     public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
     {

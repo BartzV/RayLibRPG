@@ -41,7 +41,7 @@ internal static class InputConfig
         }
     }
 
-    public static bool AccionPresionada(KeyboardKey tecla, Int32 DELAY_INICIAL, Int32 DELAY_REPETICION)
+    public static Boolean AccionPresionada(KeyboardKey tecla, Int32 DELAY_INICIAL, Int32 DELAY_REPETICION)
     {
         if (!_timersControles.ContainsKey(tecla)) return false;
 
