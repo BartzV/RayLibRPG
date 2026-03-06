@@ -2,6 +2,7 @@
 using RayLibRPG.Clases.Config;
 using RayLibRPG.Clases.Inputs;
 using RayLibRPG.Clases.Letras;
+using RayLibRPG.Logic.Personaje;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -26,7 +27,9 @@ namespace RayLibRPG.Clases.Escenario
             //this.InicializarRich();
             //this.InicializarLetra();
             //this.InicializarBarra();
-            this.InicializarPolys();
+            //this.InicializarPolys();
+            //this.InicializarPolysColoridos();
+            this.InicializarPersonajeHUD();
         }
 
         public override void Draw(float alfa)
@@ -47,12 +50,61 @@ namespace RayLibRPG.Clases.Escenario
             }
         }
 
+        public void InicializarPersonajeHUD()
+        {
+            Personaje p1 = new()
+            {
+                Id = "personaje::agrass_knights",
+                Nombre = "Agrass",
+                PCMax = 1000,
+                PCMaxActual = 1000,
+                PCActual = 1000,
+                ColorPrimario = Color.DarkPurple
+            };
+
+            PersonajeHUD hud = new(p1, new Vector2(-200, -100));
+            this.EscenarioU.Add(hud);
+            this.Capas[0].InsertarElemento(hud);
+            Lector = new LectorInputDebug<PersonajeHUD>(hud);
+
+        }
+
+        public void InicializarPolysColoridos()
+        {
+            Poligono2DVertexColor pol1 =
+                new Poligono2DVertexColor(
+                    [
+                        (new Vector2(10, 0), new Color(0, 192, 64)),        // se usa
+                        (new Vector2(0, 10), new Color(0, 128, 0)), // se usa
+                        (new Vector2(110, 0), new Color(0, 128, 32)),     // se usa
+                        (new Vector2(100, 10), new Color(0, 64, 16))
+                    ],    // se usa
+                    Vector2.Zero);
+
+            Poligono2DWireVC pol2 =
+                new Poligono2DWireVC(
+                    [
+                        (new Vector2(10, 0), Color.Red),        // se usa
+                        (new Vector2(0, 10), Color.DarkPurple), // se usa
+                        (new Vector2(100, 10), Color.Gold),
+                        (new Vector2(110, 0), Color.Green),     // se usa
+                    ],
+                    new Vector2(0, 25),
+                    true, false);
+
+            this.EscenarioU.Add(pol1);
+            this.EscenarioU.Add(pol2);
+            this.Capas[0].InsertarElemento(pol1);
+            this.Capas[0].InsertarElemento(pol2);
+            this.Lector = new LectorInputDebug<Poligono2DVertexColor>(pol1);
+        }
+
         public void InicializarPolys()
         {
-            Poligono2D pol1 = new([new Vector2(10, 0), new Vector2(0, 10), new Vector2(110, 0), new Vector2(100, 10)], Vector2.Zero, new Color(255, 0, 0, 255));
+            Poligono2DPlano pol1 = new([new Vector2(10, 0), new Vector2(0, 10), new Vector2(110, 0), new Vector2(100, 10)], Vector2.Zero, new Color(255, 0, 0, 255));
             this.EscenarioU.Add(pol1);
             this.Capas[0].InsertarElemento(pol1);
-            this.Lector = new LectorInputDebug<Poligono2D>(pol1);
+            this.Lector = new LectorInputDebug<Poligono2DPlano>(pol1);
         }
 
         public void InicializarBarra()
@@ -99,10 +151,11 @@ namespace RayLibRPG.Clases.Escenario
             Color[] arcoiris = [Color.Red, Color.Orange, Color.Gold, Color.Lime, Color.Green, Color.SkyBlue, Color.Blue, Color.Magenta];
             Color[] defecto = [Color.White, new Color(192, 64, 0), new Color(0, 192, 128), new Color(64, 0, 200)];
 
-            RichText rich = new RichText(cadPrueba, defecto, [arcoiris], Vector2.Zero, Vector2.One, 1);
-            this.Lector = new LectorInputRichText(rich);
+            RichText rich = new RichText(cadPrueba, defecto, [arcoiris], Vector2.Zero, Vector2.One, 0);
+            //this.Lector = new LectorInputRichText(rich);
 
             this.Richs.Add(rich);
+            this.EscenarioU.Add(rich);
             this.Capas[0].InsertarElemento(rich);
         }
 

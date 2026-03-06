@@ -6,8 +6,7 @@ namespace RayLibRPG.Clases.Letras;
 public class LetraPaleta : Letra
 {
     public Color[] Colores;
-    // Para el arcoiris
-    
+
     public LetraPaleta(Char caracter, Vector2 posicion, Vector2 amplitudes, Color[] colores, Int32 delayUpdate = 1, Int32 alfaUpdate = 0)
         : base(caracter, posicion, amplitudes, null, alfaUpdate)
     {
@@ -37,4 +36,10 @@ public class LetraPaleta : Letra
         this.Sprite.Tinte = this.Colores[AlfaUpdate];
         base.Update();
     }
+}
+
+public static class LetraPaletaHelper
+{
+    public static Color[] Arcoiris() => [Color.Red, Color.Orange, Color.Gold, Color.Lime, Color.Green, Color.SkyBlue, Color.Blue, Color.Magenta];
+
 }
