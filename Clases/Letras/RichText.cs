@@ -16,6 +16,19 @@ namespace RayLibRPG.Clases.Letras;
 /// </summary>
 public class RichText : IActualizable, IRenderizable, IDesplazable
 {
+    // Estado
+    public Boolean _eliminado = false;
+    public Boolean Eliminado
+    {
+        get => this._eliminado;
+        set
+        {
+            this._eliminado = value;
+            this.Activo = !value;
+        }
+    }
+    public Boolean Activo = true;
+
     // Colores
     public Color[] Colores;         // Para los Letra.
     public Color[][] Paletas;       // Para los LetraPaleta.
@@ -255,6 +268,16 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
 
     // No le des bola, no voy a implementar esta poronga.
     public void Zoom(Single zoom)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Rotar(float ang)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Estabilizar(float ang)
     {
         throw new NotImplementedException();
     }

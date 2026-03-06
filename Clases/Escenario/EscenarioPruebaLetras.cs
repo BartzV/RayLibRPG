@@ -25,8 +25,8 @@ namespace RayLibRPG.Clases.Escenario
             //this.InicializarEscenario();
             //this.InicializarRich();
             //this.InicializarLetra();
-            this.InicializarBarra();
-
+            //this.InicializarBarra();
+            this.InicializarPolys();
         }
 
         public override void Draw(float alfa)
@@ -45,6 +45,14 @@ namespace RayLibRPG.Clases.Escenario
                 String titulo = $"Sir Bartz Engine | FPS: {Raylib.GetFPS()}/{ScreenManager.FPS} | Draws: {counter,2}";
                 Raylib.SetWindowTitle(titulo);
             }
+        }
+
+        public void InicializarPolys()
+        {
+            Poligono2D pol1 = new([new Vector2(10, 0), new Vector2(0, 10), new Vector2(110, 0), new Vector2(100, 10)], Vector2.Zero, new Color(255, 0, 0, 255));
+            this.EscenarioU.Add(pol1);
+            this.Capas[0].InsertarElemento(pol1);
+            this.Lector = new LectorInputDebug<Poligono2D>(pol1);
         }
 
         public void InicializarBarra()

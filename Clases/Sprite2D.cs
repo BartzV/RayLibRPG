@@ -53,7 +53,12 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
     private Rectangle _desplazado;
     private Vector2 _centrado;
     private Vector2 _posInterpolada;
-
+    /// <summary>
+    /// Legacy???
+    /// </summary>
+    /// <param name="textura">Textura del Atlas.</param>
+    /// <param name="fuente">Lugar y tamaño de la textura que se va a usar</param>
+    /// <param name="destino">El lugar donde estará el Sprite en pantalla. </param>
     public Sprite2D(Texture2D textura, Rectangle fuente, Rectangle destino)
     {
         this.Textura = textura;
@@ -71,7 +76,7 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
         if (this.Activo)
             this.PosicionAnterior = this.PosicionActual;
     }
-    // Esto me trajo demasiados problemas. Creo que funciona. Te odio función Draw.
+    // Esto me trajo demasiados problemas. Te odio función Draw.
     public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
     {
         if (!this.Activo)
@@ -88,13 +93,13 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
         this._desplazado.Width = this.Destino.Width * escalaFinal;
         this._desplazado.Height = this.Destino.Height * escalaFinal;
 
-        // 2. LOGICA DE CULLING
+        // LOGICA DE CULLING
         // Por qué no la mitad? Porque si el Sprite no tiene el centro en el medio, esto vuela a LCDSM
         areaVisible.Width += this.Destino.Width;
         areaVisible.Height += this.Destino.Height;
         // CheckCheck: ¿El rectángulo del sprite se toca con el de la capa?
         if (!Raylib.CheckCollisionRecs(this._desplazado, areaVisible))
-            return 0; // No dibujé nada, me ahorré el DrawCall de la GPU. ¡Éxito!
+            return 0;
 
         this._centrado.X = this.Centro.X * escalaFinal;
         this._centrado.Y = this.Centro.Y * escalaFinal;
@@ -125,10 +130,31 @@ public class Sprite2D : IRenderizable, IActualizable, IDesplazable
         this.Escala += zoom;
     }
 
+    public void Rotar(Single rad)
+    {
+        this.Rotacion += rad;
+    }
+
+    public void Estabilizar(Single rad)
+    {
+        this.Rotacion = rad;
+    }
 }
 
 public class MultiSprite2D : IRenderizable, IActualizable
 {
+    public Boolean _eliminado;
+    public Boolean Eliminado
+    {
+        get => this._eliminado;
+        set
+        {
+            this._eliminado = value;
+            this.Activo = !value;
+        }
+    }
+    public Boolean Activo = true;
+
     public Sprite2D Prototipo; // Usamos un sprite base para sacar los datos
     public Vector2[] Posiciones;
     public Vector2[] PosicionesAnteriores;
@@ -158,6 +184,7 @@ public class MultiSprite2D : IRenderizable, IActualizable
 
     public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
     {
+        if (!this.Activo) return 0;
         Int32 counter = 0;
         // El truco está en "disfrazar" al prototipo en cada iteración
         for (int i = 0; i < Posiciones.Length; i++)
@@ -180,6 +207,7 @@ public interface IRenderizable
     public abstract Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible);
     // Profundidad, ya que Draw no tiene la profundidad, y Raylib.DrawTexturePro no la toma.
     public abstract Single Prioridad { get; set; }
+    public abstract Boolean Eliminado { get; set; }
 }
 
 public interface IActualizable
@@ -194,4 +222,8 @@ public interface IDesplazable
     public abstract void Mover(Vector2 mov);
     public abstract void Posicionar(Vector2 pos);
     public abstract void Zoom(Single zoom);
+    // En Radianes, la concha de tu madre.
+    public abstract void Rotar(Single ang);
+    // Setea la Rotación, no agrega.
+    public abstract void Estabilizar(Single ang);
 }

@@ -7,6 +7,15 @@ namespace RayLibRPG.Clases.Letras;
 
 public class Letra : IRenderizable, IActualizable, IDesplazable
 {
+    public Boolean _eliminado;
+    public Boolean Eliminado
+    {
+        get => this._eliminado;
+        set
+        {
+            this._eliminado = value;
+        }
+    }
     // Constantes
     public static readonly Vector2 TAM_LETRA = new Vector2(8, 8);
     // Gráficos
@@ -140,5 +149,14 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
         this.Escala += zoom;
     }
 
+    public void Rotar(Single rad)
+    {
+        this.Rotacion += rad;
+    }
+
+    public void Estabilizar(Single rad)
+    {
+        this.Rotacion = rad;
+    }
 }
 

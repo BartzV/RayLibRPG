@@ -85,7 +85,7 @@ public class Capa : IDisposable
         if (!this.Activa) return 0;
         Int32 counter = 0;
         Raylib.BeginTextureMode(this.TexturaInterna);
-        //Raylib.ClearBackground(this.Fondo);
+        Raylib.ClearBackground(this.Fondo);
 
         // Definimos el área visible de la capa (su tamaño interno)
         Rectangle areaVisible = new Rectangle(0, 0, this.Ancho, this.Alto);
@@ -114,6 +114,7 @@ public class Capa : IDisposable
     public void InsertarElementos(IRenderizable[] elemento)
     {
         this.Elementos.AddRange(elemento);
+        this._sucio = true;
     }
 
     public void DebugCorners()
@@ -131,17 +132,23 @@ public class Capa : IDisposable
         sprites[3] = new Sprite2D(Texture2DManager.GetTexture("Letra"),
             (Rectangle)LetraManager.GetRectangle('~')!,
             new Rectangle(this.Ancho - 4, this.Alto - 4, 8, 8));
-        Elementos.AddRange(sprites);
+        this.Elementos.AddRange(sprites);
     }
 
+    public void LimpiarBasura()
+    {
+        this.Elementos.RemoveAll((x) => x.Eliminado);
+    }
+
+    // Pensando...
     public void Dispose()
     {
         if (!this._disposed)
         {
             Raylib.UnloadRenderTexture(this.TexturaInterna);
-            for (Int32 i = 0; i < Elementos.Count; i++)
+            for (Int32 i = 0; i < this.Elementos.Count; i++)
             {
-                if (Elementos[i] is IDisposable d)
+                if (this.Elementos[i] is IDisposable d)
                 {
                     d.Dispose();
                 }

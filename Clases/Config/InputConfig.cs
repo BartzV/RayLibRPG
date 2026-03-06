@@ -11,7 +11,7 @@ internal static class InputConfig
     // Array de controles, para cambiar en algún futuro, que se lea de un config o algo.
     private static KeyboardKey[] _controles =
         [KeyboardKey.Up, KeyboardKey.Down, KeyboardKey.Left, KeyboardKey.Right,
-            KeyboardKey.S, KeyboardKey.A, KeyboardKey.D];
+            KeyboardKey.S, KeyboardKey.A, KeyboardKey.D, KeyboardKey.Q, KeyboardKey.W];
 
     // Cursores
     public static Boolean IzquierdaPresionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.Left, init, rep);
@@ -21,6 +21,8 @@ internal static class InputConfig
     // Botones
     public static Boolean A_Presionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.S, init, rep);
     public static Boolean B_Presionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.A, init, rep);
+    public static Boolean L_Presionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.Q, init, rep);
+    public static Boolean R_Presionada(Int32 init, Int32 rep) => AccionPresionada(KeyboardKey.W, init, rep);
 
 
     public static void Actualizar()

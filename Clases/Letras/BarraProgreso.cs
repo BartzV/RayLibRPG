@@ -5,6 +5,24 @@ namespace RayLibRPG.Clases.Letras;
 
 public class BarraProgreso : IActualizable, IRenderizable, IDesplazable
 {
+    // Estado
+    public Boolean _eliminado = false;
+    public Boolean Eliminado
+    {
+        get => this._eliminado;
+        set
+        {
+            this._eliminado = value;
+            this._fondo.Eliminado = value;
+            this._frente.Eliminado = value;
+            this._marcoI.Eliminado = value;
+            this._marcoM.Eliminado = value;
+            this._marcoD.Eliminado = value;
+            this.Activo = !value;
+        }
+    }
+    public Boolean Activo = true;
+
     private Sprite2D _fondo;
     private Sprite2D _frente;
     private Sprite2D _marcoI;   // Marco Izquierdo
@@ -63,7 +81,7 @@ public class BarraProgreso : IActualizable, IRenderizable, IDesplazable
         Rectangle fuenteMI = LetraManager.GetRectangle('\uFBF0') ?? throw new InvalidOperationException();
         Rectangle fuenteMM = LetraManager.GetRectangle('\uFBF1') ?? throw new InvalidOperationException();
         Rectangle fuenteMD = LetraManager.GetRectangle('\uFBF2') ?? throw new InvalidOperationException();
-        if(tam < 8)
+        if (tam < 8)
         {
             tam = 8;
         }
@@ -125,6 +143,18 @@ public class BarraProgreso : IActualizable, IRenderizable, IDesplazable
     public void Zoom(Single zoom)
     {
         this.Escala += zoom;
+    }
+
+    public void Rotar(Single ang)
+    {
+        // No quiero implementar esto
+        return;
+    }
+
+    public void Estabilizar(Single ang)
+    {
+        // No quiero implementar esto
+        return;
     }
 }
 

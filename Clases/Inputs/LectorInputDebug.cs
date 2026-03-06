@@ -31,6 +31,11 @@ public class LectorInputDebug<T> : LectorInput where T : IRenderizable, IDesplaz
         Boolean arrP = InputConfig.ArribaPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
         Boolean abjP = InputConfig.AbajoPresionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
 
+        Boolean zoomInP = InputConfig.A_Presionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+        Boolean zoomOutP = InputConfig.B_Presionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+
+        Boolean rotIzP = InputConfig.L_Presionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
+        Boolean rotDeP = InputConfig.R_Presionada(this.DELAY_INICIAL, this.DELAY_REPETICION);
 
         if (izqP && !derP)
         {
@@ -50,6 +55,26 @@ public class LectorInputDebug<T> : LectorInput where T : IRenderizable, IDesplaz
         if (abjP && !arrP)
         {
             this.Elemento.Mover(abj);
+            res = true;
+        }
+        if (zoomInP && !zoomOutP)
+        {
+            this.Elemento.Zoom(0.5F);
+            res = true;
+        }
+        if (zoomOutP && !zoomInP)
+        {
+            this.Elemento.Zoom(-0.5F);
+            res = true;
+        }
+        if (rotIzP && !rotDeP)
+        {
+            this.Elemento.Rotar((Single)Math.PI / 30F);
+            res = true;
+        }
+        if (!rotIzP && rotDeP)
+        {
+            this.Elemento.Rotar((Single)Math.PI / -30F);
             res = true;
         }
         return res;
