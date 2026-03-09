@@ -9,12 +9,12 @@ public class Capa : IDisposable
 {
     // Forma de identificarlo
     public String Nombre;
-    private bool _sucio = false; // Se movió algo para el frente?
+    private Boolean _sucio = false;            // Se movió algo para el frente?
     public Boolean DebeReordenar { get => this._sucio; }
 
     private Boolean _disposed = false;
     // Profundizar...
-    public Boolean Activa = true;              // Si la capa está activa, se dibuja. Sino, no se dibuja ni se actualiza. Útil para cosas como el menú de pausa.
+    public Boolean Activa = true;           // Si la capa está activa, se dibuja. Sino, no se dibuja ni se actualiza. Útil para cosas como el menú de pausa.
     // Para cada capa, tenemos una textura interna donde se dibuja todo. Al final de cada Draw, se pega esa textura en el Main.
     public RenderTexture2D TexturaInterna;
     public Vector2 Posicion;                // Guardar para cuando se cambia la resolución.
@@ -27,7 +27,7 @@ public class Capa : IDisposable
     public Vector2 DesplazamientoCamara;    // El desplazamiento de todo lo que se renderice acá.
     public Single FactorProfundidad;        // El ZBuffer global de esta capa.
     // Extra
-    public Boolean EsRapido = true;         // Si es rápido, se renderiza a los frames actuales. Sino, va a 30 FPS.
+    public Boolean EsRapido = true;         // Si es rápido, se renderiza a los frames actuales. Sino, va a 60 FPS.
     public Color Tinte;                     // Tinte para efectos como luz.
     public Color Fondo;                     // Color para debuggear, no se va a usar en el producto final.
     public Int64 FramesTranscurridos = 0;
@@ -75,11 +75,13 @@ public class Capa : IDisposable
             ancho * ScreenManager.TamPixel,
             alto * ScreenManager.TamPixel);
     }
+
     public void Reposicionar(Vector2 nuevaPosicion)
     {
         this.Posicion = nuevaPosicion;
         CambiarResolucion(this.Ancho, this.Alto);
     }
+
     public Int32 Renderizar(Single alfa, Int64 framesTotales)
     {
         if (!this.Activa) return 0;
@@ -99,7 +101,7 @@ public class Capa : IDisposable
 
         if (_sucio)
         {
-            this.Elementos.Sort((x, y) => y.Prioridad.CompareTo(x.Prioridad));
+            this.Elementos.Sort((x, y) => y.CapaPrioridad.CompareTo(x.CapaPrioridad));
             _sucio = false;
         }
 
@@ -156,8 +158,6 @@ public class Capa : IDisposable
             this._disposed = true;
         }
     }
-
-    
 }
 
 public static class CapaFactory

@@ -5,7 +5,7 @@ using System.Timers;
 
 namespace RayLibRPG.Clases.Letras;
 
-public class Letra : IRenderizable, IActualizable, IDesplazable
+public class Letra : IRenderizable, IActualizable, ITransformable
 {
     public Boolean _eliminado;
     public Boolean Eliminado
@@ -16,6 +16,14 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
             this._eliminado = value;
         }
     }
+
+    protected Boolean _activo = true;
+    public Boolean Activo
+    {
+        get => this._activo;
+        set => this._activo = value;
+    }
+
     // Constantes
     public static readonly Vector2 TAM_LETRA = new Vector2(8, 8);
     // Gráficos
@@ -23,17 +31,6 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
     // Para qué lo guardo? Para que pregunten los boludos.
     public Char Caracter;
     protected Color _tinte;
-    // IDesplazable
-    private Single _escala;
-    public Single Escala
-    {
-        get => this._escala;
-        set
-        {
-            this._escala = value;
-            this.Sprite.Escala = value;
-        }
-    }
     // Para efectos. Quien lo use para lógica lo mato.
     public EfectoLetra Efecto = EfectoLetra.Ninguno;
     public Int32 AlfaUpdate;
@@ -76,14 +73,30 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
         }
     }
     private Single _prioridad;
-    public Single Prioridad
+    public Single ProfundidadZ
     {
         get => _prioridad;
         set
         {
             this._prioridad = value;
-            this.Sprite.Prioridad = value;
+            this.Sprite.ProfundidadZ = value;
         }
+    }
+    protected Vector2 _amplificacion;
+    public Vector2 Amplificacion
+    {
+        get => this._amplificacion;
+        set
+        {
+            this._amplificacion = Vector2.Abs(value);
+            this.Sprite.Amplificacion = value;
+        }
+    }
+
+    public Single CapaPrioridad
+    {
+        get => this.Sprite.CapaPrioridad;
+        set => this.Sprite.CapaPrioridad = value;
     }
 
     public Letra(Char caracter, Vector2 posicion, Vector2 amplitudes, Color? tinte = null, Int32 alfa = 0)
@@ -144,9 +157,14 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
         this.Posicion = pos;
     }
 
-    public void Zoom(Single zoom)
+    public void AplicarZoom(Single zoom)
     {
-        this.Escala += zoom;
+        this.ProfundidadZ = Math.Max(this.ProfundidadZ + zoom, 0);
+    }
+
+    public void SetZoom(Single zoom)
+    {
+        this.ProfundidadZ = zoom;
     }
 
     public void Rotar(Single rad)
@@ -157,6 +175,11 @@ public class Letra : IRenderizable, IActualizable, IDesplazable
     public void Estabilizar(Single rad)
     {
         this.Rotacion = rad;
+    }
+
+    public void SetFlip(Boolean x, Boolean y)
+    {
+        this.Sprite.SetFlip(x, y);
     }
 }
 

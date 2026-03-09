@@ -16,23 +16,24 @@ namespace RayLibRPG.Clases.Escenario
         public LectorInput Lector;
         public List<RichText> Richs = new();
         public List<Letra> Letras = new();
-        public List<BarraProgreso> Barras = new();
 
         public List<IActualizable> EscenarioU = new();
 
         public override void Initialize()
         {
             this.Capas = ScreenManager.InsertarCapas(CapaFactory.CrearCapasPrueba());
+            //this.InicializarSprite();
             //this.InicializarEscenario();
             //this.InicializarRich();
             //this.InicializarLetra();
-            //this.InicializarBarra();
             //this.InicializarPolys();
+            this.InicializarCirculo();
             //this.InicializarPolysColoridos();
-            this.InicializarPersonajeHUD();
+            //this.InicializarPersonajeHUD();
+            this.Capas[0].DebugCorners();
         }
 
-        public override void Draw(float alfa)
+        public override void Draw(Single alfa)
         {
             Int32 counter = 0;
             for (Int32 i = 0; i < Capas.Length; i++)
@@ -50,6 +51,14 @@ namespace RayLibRPG.Clases.Escenario
             }
         }
 
+        public void InicializarCirculo()
+        {
+            Circulo2D c = new(Vector2.Zero, 12, Color.Red);
+            this.EscenarioU.Add(c);
+            this.Capas[0].InsertarElemento(c);
+            this.Lector = new LectorInputCustom<Circulo2D>(c);
+        }
+
         public void InicializarPersonajeHUD()
         {
             Personaje p1 = new()
@@ -59,14 +68,13 @@ namespace RayLibRPG.Clases.Escenario
                 PCMax = 1000,
                 PCMaxActual = 1000,
                 PCActual = 1000,
-                ColorPrimario = Color.DarkPurple
+                ColorPrimario = new Color(128, 0, 192)
             };
 
             PersonajeHUD hud = new(p1, new Vector2(-200, -100));
             this.EscenarioU.Add(hud);
             this.Capas[0].InsertarElemento(hud);
-            Lector = new LectorInputDebug<PersonajeHUD>(hud);
-
+            this.Lector = new LectorInputHUD(hud);
         }
 
         public void InicializarPolysColoridos()
@@ -74,20 +82,20 @@ namespace RayLibRPG.Clases.Escenario
             Poligono2DVertexColor pol1 =
                 new Poligono2DVertexColor(
                     [
-                        (new Vector2(10, 0), new Color(0, 192, 64)),        // se usa
-                        (new Vector2(0, 10), new Color(0, 128, 0)), // se usa
-                        (new Vector2(110, 0), new Color(0, 128, 32)),     // se usa
+                        (new Vector2(10, 0), new Color(0, 192, 64)),
+                        (new Vector2(0, 10), new Color(0, 128, 0)),
+                        (new Vector2(110, 0), new Color(0, 128, 32)),
                         (new Vector2(100, 10), new Color(0, 64, 16))
-                    ],    // se usa
+                    ],
                     Vector2.Zero);
 
             Poligono2DWireVC pol2 =
                 new Poligono2DWireVC(
                     [
-                        (new Vector2(10, 0), Color.Red),        // se usa
-                        (new Vector2(0, 10), Color.DarkPurple), // se usa
+                        (new Vector2(10, 0), Color.Red),
+                        (new Vector2(0, 10), Color.DarkPurple),
                         (new Vector2(100, 10), Color.Gold),
-                        (new Vector2(110, 0), Color.Green),     // se usa
+                        (new Vector2(110, 0), Color.Green),
                     ],
                     new Vector2(0, 25),
                     true, false);
@@ -96,40 +104,41 @@ namespace RayLibRPG.Clases.Escenario
             this.EscenarioU.Add(pol2);
             this.Capas[0].InsertarElemento(pol1);
             this.Capas[0].InsertarElemento(pol2);
-            this.Lector = new LectorInputDebug<Poligono2DVertexColor>(pol1);
+            //this.Lector = new LectorInputDebug<Poligono2DVertexColor>(pol1);
         }
 
         public void InicializarPolys()
         {
             Poligono2DPlano pol1 = new([new Vector2(10, 0), new Vector2(0, 10), new Vector2(110, 0), new Vector2(100, 10)], Vector2.Zero, new Color(255, 0, 0, 255));
+            pol1.Rotacion = 90;
             this.EscenarioU.Add(pol1);
             this.Capas[0].InsertarElemento(pol1);
-            this.Lector = new LectorInputDebug<Poligono2DPlano>(pol1);
+            this.Lector = new LectorInputCustom<Poligono2DPlano>(pol1);
         }
 
-        public void InicializarBarra()
-        {
-            BarraProgreso bar1 = new(new Vector2(0, 0), 128, Color.Green, Color.Red, Color.Gold);
-            bar1.Porcentaje = 0.75f;
-            bar1.Prioridad = 1000;
-            this.Barras.Add(bar1);
+        //public void InicializarBarra()
+        //{
+        //    BarraProgreso bar1 = new(new Vector2(0, 0), 128, Color.Green, Color.Red, Color.Gold);
+        //    bar1.Porcentaje = 0.75f;
+        //    bar1.Prioridad = 1000;
+        //    this.Barras.Add(bar1);
 
-            BarraProgreso bar2 = new(new Vector2(0, 20), 8, Color.SkyBlue, Color.DarkBlue, Color.Beige);
-            bar2.Porcentaje = 0.33f;
-            bar2.Prioridad = 1000;
-            this.Barras.Add(bar2);
+        //    BarraProgreso bar2 = new(new Vector2(0, 20), 8, Color.SkyBlue, Color.DarkBlue, Color.Beige);
+        //    bar2.Porcentaje = 0.33f;
+        //    bar2.Prioridad = 1000;
+        //    this.Barras.Add(bar2);
 
-            RichText rich = new("{c1}100{c0}/{c2}100", [new Color(255, 255, 255), new Color(204, 255, 204), new Color(255, 204, 255)], null, new Vector2(0, 0), Vector2.One, 1);
-            rich.Prioridad = 101;
+        //    RichText rich = new("{c1}100{c0}/{c2}100", [new Color(255, 255, 255), new Color(204, 255, 204), new Color(255, 204, 255)], null, new Vector2(0, 0), Vector2.One, 1);
+        //    rich.Prioridad = 101;
 
-            this.EscenarioU.Add(rich);
-            this.EscenarioU.Add(bar1);
-            this.EscenarioU.Add(bar2);
+        //    this.EscenarioU.Add(rich);
+        //    this.EscenarioU.Add(bar1);
+        //    this.EscenarioU.Add(bar2);
 
-            this.Capas[0].InsertarElemento(rich);
-            this.Capas[0].InsertarElemento(bar1);
-            this.Capas[0].InsertarElemento(bar2);
-        }
+        //    this.Capas[0].InsertarElemento(rich);
+        //    this.Capas[0].InsertarElemento(bar1);
+        //    this.Capas[0].InsertarElemento(bar2);
+        //}
 
         public void InicializarEscenario()
         {
@@ -162,10 +171,20 @@ namespace RayLibRPG.Clases.Escenario
         public void InicializarLetra()
         {
             Letra l = new Letra('A', Vector2.Zero, Vector2.One, Color.Red);
-            l.Escala = 1;
 
             this.Letras.Add(l);
-            this.Lector = new LectorInputLetra(l);
+            this.Lector = new LectorInputDebug<Letra>(l);
+            this.EscenarioU.Add(l);
+            this.Capas[0].InsertarElemento(l);
+        }
+
+        public void InicializarSprite()
+        {
+            Sprite2D l = new Sprite2D(Texture2DManager.GetTexture("Letra"), new Rectangle(8, 0, 8, 8), Vector2.Zero, Vector2.One * 8, new Vector2(2, 1));
+            l.Rotacion = 90F;
+            this.Lector = new LectorInputCustom<Sprite2D>(l);
+
+
             this.EscenarioU.Add(l);
             this.Capas[0].InsertarElemento(l);
         }

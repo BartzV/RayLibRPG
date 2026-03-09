@@ -53,12 +53,12 @@ public class LectorInputLetra : LectorInput
         }
         if(zoomIn && !zoomOut)
         {
-            this.Elemento.Zoom(0.1F);
+            this.Elemento.AplicarZoom(0.1F);
             res = true;
         }
         if (zoomOut && !zoomIn)
         {
-            this.Elemento.Zoom(-0.1F);
+            this.Elemento.AplicarZoom(-0.1F);
             res = true;
         }
         return res;

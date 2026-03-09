@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace RayLibRPG.Clases;
 
-public class Poligono2DVertexColor : IRenderizable, IActualizable, IDesplazable
+public class Poligono2DVertexColor : IRenderizable, IActualizable, ITransformable
 {
     private Boolean _eliminado = false;
     public Boolean Eliminado
@@ -16,7 +16,13 @@ public class Poligono2DVertexColor : IRenderizable, IActualizable, IDesplazable
         }
     }
 
-    public Boolean Activo = true;
+    protected Boolean _activo = true;
+    public Boolean Activo
+    {
+        get => this._activo;
+        set => this._activo = value;
+    }
+
     public Vector2[] VerticesOriginales; // La forma base
     private Vector2[] _verticesProcesados; // Para no tocar los originales
     private Color[] _colores;
@@ -25,16 +31,31 @@ public class Poligono2DVertexColor : IRenderizable, IActualizable, IDesplazable
     public Vector2 PosicionAnterior;
     private Vector2 _posInterpolada;
 
-    // En Radianes!!!
-    private Single _rotacion;
+    // Implementación de IDesplazable (igual que Sprite2D)
+    public Vector2 Posicion { get => PosicionActual; set => PosicionActual = value; }
+    public Vector2 Amplificacion { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+    protected Single _rotacion;
     public Single Rotacion
     {
         get => _rotacion;
         set => this._rotacion = value;
     }
-
-    public Single Escala { get; set; } = 1.0f;
-    public Single Prioridad { get; set; }
+    protected Single _capaPrioridad;
+    public Single CapaPrioridad
+    {
+        get => this._capaPrioridad;
+        set => this._capaPrioridad = value;
+    }
+    protected Single _prioridadZ;
+    public Single ProfundidadZ 
+    { 
+        get => this._prioridadZ;
+        set
+        {
+            this._prioridadZ = value;
+        }
+    }
 
     public Boolean EsStrip; // True para Strip, False para Fan
     public Single RadioMaximo;
@@ -46,6 +67,8 @@ public class Poligono2DVertexColor : IRenderizable, IActualizable, IDesplazable
         this.VerticesOriginales = new Vector2[vertices.Length];
         this._verticesProcesados = new Vector2[vertices.Length];
         this._colores = new Color[vertices.Length];
+        this.ProfundidadZ = 1F;
+        this.Amplificacion = Vector2.One;
 
         for (Int32 i = 0; i < vertices.Length; i++)
         {
@@ -79,7 +102,7 @@ public class Poligono2DVertexColor : IRenderizable, IActualizable, IDesplazable
     {
         if (!this.Activo) return 0;
 
-        Single escalaFinal = zbuf / this.Escala;
+        Single escalaFinal = zbuf / this.ProfundidadZ;
         this._posInterpolada = Vector2.Lerp(this.PosicionAnterior, this.PosicionActual, alfa);
 
         // 1. CULLING INTELIGENTE
@@ -153,13 +176,17 @@ public class Poligono2DVertexColor : IRenderizable, IActualizable, IDesplazable
         Rlgl.Vertex2f(_verticesProcesados[index].X, _verticesProcesados[index].Y);
     }
 
-    // Implementación de IDesplazable (igual que Sprite2D)
-    public Vector2 Posicion { get => PosicionActual; set => PosicionActual = value; }
+
     public void Mover(Vector2 mov) => this.Posicion += mov;
     public void Posicionar(Vector2 pos) => this.Posicion = pos;
-    public void Zoom(Single zoom) => this.Escala += zoom;
+    public void AplicarZoom(Single zoom) => this.ProfundidadZ = Math.Max(0, this.ProfundidadZ + zoom);
+    public void SetZoom(Single zoom) => this.ProfundidadZ += zoom;
     public void Rotar(Single rad) => this.Rotacion += rad;
     public void Estabilizar(Single rad) => this.Rotacion = rad;
 
+    public void SetFlip(Boolean x, Boolean y)
+    {
+        throw new NotImplementedException();
+    }
 }
 

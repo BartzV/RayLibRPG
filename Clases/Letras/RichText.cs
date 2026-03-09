@@ -14,7 +14,7 @@ namespace RayLibRPG.Clases.Letras;
 /// <item>{t##} para espacios a tabular (para no dibujar espacios vacíos)</item>
 /// </list>
 /// </summary>
-public class RichText : IActualizable, IRenderizable, IDesplazable
+public class RichText : IActualizable, IRenderizable, ITransformable
 {
     // Estado
     public Boolean _eliminado = false;
@@ -27,32 +27,26 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
             this.Activo = !value;
         }
     }
-    public Boolean Activo = true;
+
+    protected Boolean _activo = true;
+    public Boolean Activo
+    {
+        get => this._activo;
+        set => this._activo = value;
+    }
 
     // Colores
-    public Color[] Colores;         // Para los Letra.
-    public Color[][] Paletas;       // Para los LetraPaleta.
+    public Color[] Colores;             // Para los Letra.
+    public Color[][] Paletas;           // Para los LetraPaleta.
     // Posiciones y Transformaciones
     protected Vector2 _posicion;        // Posición del primer caracter.
-    public Vector2 Amplitudes;      // Para TODAS las letras. No nos venimos con chiquitas.
-    public Vector2 Rotaciones;      // Para TODAS las letras. No rota los textos, sólo las letras. No implementado.
-    public Vector2 Espaciado;      // Para TODAS las letras. No rota los textos, sólo las letras. No implementado.
-
-    protected Single _escala;
     protected Single _prioridad;
-
-    // No funciona correctamente. Está reservado para efecto de Fade In y Fade Out
-    public Single Escala
-    {
-        get => this._escala;
-        set
-        {
-            this._escala = value;
-            this.Letras.ForEach((x) => x.Escala = value);
-        }
-    }
-    
-    public Single Prioridad
+    protected Single _rotacion;
+    protected Vector2 _amplificacion;
+    // Tratar de rehacer esto
+    protected Vector2 Espaciado;
+    // Reservado para efectos Fade In.
+    public Single ProfundidadZ
     {
         get => this._prioridad;
         set
@@ -60,9 +54,24 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
             this._prioridad = value;
             for (Int32 i = 0; i < this.Letras.Count; i++)
             {
-                this.Letras[i].Prioridad = value;
+                this.Letras[i].ProfundidadZ = value;
             }
         }
+    }
+    public Vector2 Amplificacion
+    {
+        get => this._amplificacion;
+        set => this._amplificacion = Vector2.Abs(value);
+    }
+    public Single CapaPrioridad
+    {
+        get => this._prioridad;
+        set => this._prioridad = value;
+    }
+    public Single Rotacion
+    {
+        get => this._rotacion;
+        set => this._rotacion = value;
     }
 
     // Tiempo de Vida y Tiempos
@@ -112,8 +121,6 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
         }
         this.VelTexto = velTexto;
         this.Espaciado = espaciado ?? Letra.TAM_LETRA;
-        // Sin uso de momento.
-        this.Amplitudes = amplitud;
         // Estados
         Int32 colorActual = 0;
         Int32 paletaActual = 0;
@@ -267,17 +274,27 @@ public class RichText : IActualizable, IRenderizable, IDesplazable
     }
 
     // No le des bola, no voy a implementar esta poronga.
-    public void Zoom(Single zoom)
+    public void Rotar(Single ang)
     {
         throw new NotImplementedException();
     }
 
-    public void Rotar(float ang)
+    public void Estabilizar(Single ang)
     {
         throw new NotImplementedException();
     }
 
-    public void Estabilizar(float ang)
+    public void AplicarZoom(Single zoom)
+    {
+        this.ProfundidadZ = Math.Max(0, this.ProfundidadZ);
+    }
+
+    public void SetZoom(Single zoom)
+    {
+        this.ProfundidadZ = zoom;
+    }
+
+    public void SetFlip(Boolean x, Boolean y)
     {
         throw new NotImplementedException();
     }

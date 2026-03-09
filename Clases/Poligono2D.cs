@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace RayLibRPG.Clases;
 
-public class Poligono2DPlano : IRenderizable, IActualizable, IDesplazable
+public class Poligono2DPlano : IRenderizable, IActualizable, ITransformable
 {
     private Boolean _eliminado = false;
     public Boolean Eliminado
@@ -16,24 +16,58 @@ public class Poligono2DPlano : IRenderizable, IActualizable, IDesplazable
         }
     }
 
-    public Boolean Activo = true;
+    protected Boolean _activo = true;
+    public Boolean Activo
+    {
+        get => this._activo;
+        set => this._activo = value;
+    }
+
     public Vector2[] VerticesOriginales; // La forma base
     private Vector2[] _verticesProcesados; // Para no tocar los originales
 
     public Vector2 PosicionActual;
     public Vector2 PosicionAnterior;
-    private Vector2 _posInterpolada;
 
-    // En Radianes!!!
-    private Single _rotacion;
+    private Vector2 _posInterpolada;
+    protected Single _escala;
+    protected Single _prioridad;
+    protected Vector2 _amplificacion;
+    protected Single _rotacion;
+
+    // IDesplazable
+    public Vector2 Posicion
+    {
+        get => this.PosicionActual;
+        set => this.PosicionActual = value;
+    }
+
+    // Para agrandar o achicar sin afectar la profundidad
+    // Se puede "aplastar" disminuyendo el Y, dejando el X en 1.
+    public Vector2 Amplificacion
+    {
+        get => this._amplificacion;
+        set => this._amplificacion = Vector2.Abs(value);
+    }
+
+    public Single ProfundidadZ
+    {
+        get => this._prioridad;
+        set => this._prioridad = value;
+    }
+
+    public Single CapaPrioridad
+    {
+        get => this._prioridad;
+        set => this._prioridad = value;
+    }
+
     public Single Rotacion
     {
         get => _rotacion;
         set => this._rotacion = value;
     }
 
-    public Single Escala { get; set; } = 1.0f;
-    public Single Prioridad { get; set; }
 
     public Color Tinte;
     public Boolean EsStrip; // True para Strip, False para Fan
@@ -49,6 +83,9 @@ public class Poligono2DPlano : IRenderizable, IActualizable, IDesplazable
         this._verticesProcesados = new Vector2[vertices.Length];
         this.PosicionActual = pos;
         this.PosicionAnterior = pos;
+        this.ProfundidadZ = 1F;
+        this.Amplificacion = Vector2.One;
+
         this.Tinte = color;
         this.EsStrip = esStrip;
 
@@ -63,43 +100,43 @@ public class Poligono2DPlano : IRenderizable, IActualizable, IDesplazable
                 this.RadioMaximo = distanciaAlCentro;
         }
     }
-
-    public void Update()
-    {
-        if (this.Activo)
-            this.PosicionAnterior = this.PosicionActual;
-    }
-
+    public const float DEG_TO_RAD = 0.0174532925f;
     public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
     {
         if (!this.Activo) return 0;
 
-        Single escalaFinal = zbuf / this.Escala;
+        Single escalaFinal = zbuf / this.ProfundidadZ;
         this._posInterpolada = Vector2.Lerp(this.PosicionAnterior, this.PosicionActual, alfa);
 
         // 1. CULLING INTELIGENTE
-        // Calculamos la posición final en pantalla de nuestro "centro"
         Vector2 posEnPantalla = (this._posInterpolada * escalaFinal) + desp;
-        // El radio también se ve afectado por la escala
-        float radioEnPantalla = this.RadioMaximo * escalaFinal;
 
-        // Si el círculo que envuelve al polígono no toca el área visible, nos tomamos el palo
+        // El radio máximo ahora debe considerar la amplificación más grande para el culling
+        Single maxAmp = Math.Max(this.Amplificacion.X, this.Amplificacion.Y);
+        Single radioEnPantalla = this.RadioMaximo * escalaFinal * maxAmp;
+
         if (!Raylib.CheckCollisionCircleRec(posEnPantalla, radioEnPantalla, areaVisible))
             return 0;
 
-        // 2. TRANSFORMACIONES (Solo si pasó el Culling)
-        Single cos = (Single)Math.Cos(this.Rotacion);
-        Single sin = (Single)Math.Sin(this.Rotacion);
+        // 2. TRANSFORMACIONES
+        Single rotGrados = this.Rotacion * DEG_TO_RAD;
+        Single cos = (Single)Math.Cos(rotGrados);
+        Single sin = (Single)Math.Sin(rotGrados);
 
         for (int i = 0; i < VerticesOriginales.Length; i++)
         {
-            // Rotación
-            Single rx = VerticesOriginales[i].X * cos - VerticesOriginales[i].Y * sin;
-            Single ry = VerticesOriginales[i].X * sin + VerticesOriginales[i].Y * cos;
+            // --- LA MAGIA ESTÁ ACÁ ---
+            // A. Aplicamos Amplificación LOCAL (Squash & Stretch)
+            Single sX = this.VerticesOriginales[i].X * this.Amplificacion.X;
+            Single sY = this.VerticesOriginales[i].Y * this.Amplificacion.Y;
 
-            // Posicionamiento final
-            _verticesProcesados[i].X = (rx + _posInterpolada.X) * escalaFinal + desp.X;
-            _verticesProcesados[i].Y = (ry + _posInterpolada.Y) * escalaFinal + desp.Y;
+            // B. Rotamos el punto ya "amplificado"
+            Single rx = sX * cos - sY * sin;
+            Single ry = sX * sin + sY * cos;
+
+            // C. Posicionamiento final (Mundo + Cámara + Z-Scale)
+            this._verticesProcesados[i].X = (rx + this._posInterpolada.X) * escalaFinal + desp.X;
+            this._verticesProcesados[i].Y = (ry + this._posInterpolada.Y) * escalaFinal + desp.Y;
         }
 
         // 3. RENDER
@@ -111,12 +148,97 @@ public class Poligono2DPlano : IRenderizable, IActualizable, IDesplazable
         return 1;
     }
 
-    // Implementación de IDesplazable (igual que Sprite2D)
-    public Vector2 Posicion { get => PosicionActual; set => PosicionActual = value; }
+    public void Update()
+    {
+        if (this.Activo)
+            this.PosicionAnterior = this.PosicionActual;
+    }
+
+
     public void Mover(Vector2 mov) => this.Posicion += mov;
     public void Posicionar(Vector2 pos) => this.Posicion = pos;
-    public void Zoom(Single zoom) => this.Escala += zoom;
+    public void AplicarZoom(Single zoom) => this.ProfundidadZ = Math.Max(this.ProfundidadZ, 0F);
+    public void SetZoom(Single zoom) => this.ProfundidadZ = zoom;
     public void Rotar(Single rad) => this.Rotacion += rad;
     public void Estabilizar(Single rad) => this.Rotacion = rad;
 
+    public void SetFlip(Boolean x, Boolean y)
+    {
+        if (x)
+        {
+            for (Int32 i = 0; i < this.VerticesOriginales.Length; i++)
+            {
+                this.VerticesOriginales[i].X = -this.VerticesOriginales[i].X;
+            }
+        }
+        if (y)
+        {
+            for (Int32 i = 0; i < this.VerticesOriginales.Length; i++)
+            {
+                this.VerticesOriginales[i].Y = -this.VerticesOriginales[i].Y;
+            }
+        }
+    }
+}
+
+public class Circulo2D : IRenderizable, IActualizable, ITransformable
+{
+    public Boolean Activo { get; set; } = true;
+    public Boolean Eliminado { get; set; } = false;
+    public Single CapaPrioridad { get; set; }
+
+    // ITransformable
+    public Vector2 Posicion { get; set; }
+    public Vector2 PosicionAnterior;
+    public Single ProfundidadZ { get; set; } = 1.0f;
+    public Single Rotacion { get; set; } // El círculo no "parece" rotar, pero para el Squash & Stretch importa!
+    public Vector2 Amplificacion { get; set; } = Vector2.One;
+
+    public Single Radio;
+    public Color Tinte;
+
+    public Circulo2D(Vector2 pos, Single radio, Color color)
+    {
+        this.Posicion = pos;
+        this.PosicionAnterior = pos;
+        this.Radio = radio;
+        this.Tinte = color;
+    }
+
+    public void Update()
+    {
+        if (this.Activo)
+            this.PosicionAnterior = this.Posicion;
+    }
+
+    public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
+    {
+        if (!this.Activo) return 0;
+
+        Single escalaFinal = zbuf / this.ProfundidadZ;
+        Vector2 posInterpolada = Vector2.Lerp(this.PosicionAnterior, this.Posicion, alfa);
+
+        // Transformación a pantalla
+        Vector2 posPantalla = (posInterpolada * escalaFinal) + desp;
+        Single radioFinal = this.Radio * escalaFinal;
+
+        // CULLING CIRCULAR: El más eficiente de todos
+        // Expandimos el radio por la mayor amplificación para que no desaparezca de golpe
+        Single maxAmp = Math.Max(this.Amplificacion.X, this.Amplificacion.Y);
+        if (!Raylib.CheckCollisionCircleRec(posPantalla, radioFinal * maxAmp, areaVisible))
+            return 0;
+
+        Raylib.DrawCircleV(posPantalla, radioFinal, this.Tinte);
+
+        return 1;
+    }
+
+    // Métodos de ITransformable (Motosierra ready)
+    public void Mover(Vector2 mov) => this.Posicion += mov;
+    public void Posicionar(Vector2 pos) => this.Posicion = pos;
+    public void Rotar(Single rad) => this.Rotacion += rad;
+    public void Estabilizar(Single rad) => this.Rotacion = rad;
+    public void AplicarZoom(Single delta) => this.ProfundidadZ = Math.Max(0, this.ProfundidadZ + delta);
+    public void SetZoom(Single valor) => this.ProfundidadZ = valor;
+    public void SetFlip(bool x, bool y) { /* Un círculo espejado es... un círculo */ }
 }
