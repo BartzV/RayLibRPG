@@ -32,10 +32,10 @@ namespace RayLibRPG.Logic.Personaje
             set => this._activo = value;
         }
         protected Single _capaProfundidad;
-        public Single CapaPrioridad 
-        { 
+        public Single CapaPrioridad
+        {
             get => this._capaProfundidad;
-            set 
+            set
             {
                 this._capaProfundidad = value;
                 throw new NotImplementedException();
@@ -53,17 +53,30 @@ namespace RayLibRPG.Logic.Personaje
             get => this._posicion;
             set
             {
+                Vector2 rel = value - this._posicion;
+                this.RichNombre.Posicion += rel;
+                this.RichPCActual.Posicion += rel;
+                this.RichPCMax.Posicion += rel;
+                this.Barra.Posicion += rel;
                 this._posicion = value;
-                this.RichNombre.Posicion = value;
-                this.RichPCActual.Posicion = value;
-                this.RichPCMax.Posicion = value;
-                this.Barra.Posicion = value;
             }
         }
 
-        public Single ProfundidadZ { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public Single Rotacion { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public Vector2 Amplificacion { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public Single ProfundidadZ
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
+        public Single Rotacion
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
+        public Vector2 Amplificacion
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
 
         // Letras
         public RichText RichNombre;
@@ -76,7 +89,7 @@ namespace RayLibRPG.Logic.Personaje
             this.PJ = pj;
             this.PCMaxActual = pj.PCMaxActual;
             this.PCActual = pj.PCActual;
-            this.Posicion = pos;
+            this._posicion = pos;
             // Letras
             this.RichNombre = new($"{{c0}}{pj.Nombre}", [this.PJ.ColorPrimario], [LetraPaletaHelper.Arcoiris()], pos, Vector2.One, 0);
             this.RichPCActual = new(GetPCActual(this.PCActual), [PersonajeHUD.Salud], null, pos + new Vector2(8 * 16, 0), Vector2.One, 0);
@@ -119,37 +132,37 @@ namespace RayLibRPG.Logic.Personaje
 
         public void Mover(Vector2 mov)
         {
-            throw new NotImplementedException();
+            this.Posicion += mov;
         }
 
         public void Posicionar(Vector2 pos)
         {
-            throw new NotImplementedException();
+            this.Posicion = pos;
         }
 
         public void Rotar(Single rad)
         {
-            throw new NotImplementedException();
+            // Nada
         }
 
         public void Estabilizar(Single rad)
         {
-            throw new NotImplementedException();
+            // Nada
         }
 
         public void AplicarZoom(Single delta)
         {
-            throw new NotImplementedException();
+            // Nada
         }
 
         public void SetZoom(Single valor)
         {
-            throw new NotImplementedException();
+            // Nada
         }
 
         public void SetFlip(Boolean x, Boolean y)
         {
-            throw new NotImplementedException();
+            // Nada
         }
 
         public static Color Salud = new Color(255, 230, 230);

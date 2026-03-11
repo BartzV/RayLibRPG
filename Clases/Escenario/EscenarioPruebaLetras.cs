@@ -27,10 +27,9 @@ namespace RayLibRPG.Clases.Escenario
             //this.InicializarRich();
             //this.InicializarLetra();
             //this.InicializarPolys();
-            this.InicializarCirculo();
+            //this.InicializarCirculo();
             //this.InicializarPolysColoridos();
-            //this.InicializarPersonajeHUD();
-            this.Capas[0].DebugCorners();
+            this.InicializarPersonajeHUD();
         }
 
         public override void Draw(Single alfa)
@@ -64,7 +63,7 @@ namespace RayLibRPG.Clases.Escenario
             Personaje p1 = new()
             {
                 Id = "personaje::agrass_knights",
-                Nombre = "Agrass",
+                Nombre = "Agrass Knights",
                 PCMax = 1000,
                 PCMaxActual = 1000,
                 PCActual = 1000,
@@ -74,7 +73,7 @@ namespace RayLibRPG.Clases.Escenario
             PersonajeHUD hud = new(p1, new Vector2(-200, -100));
             this.EscenarioU.Add(hud);
             this.Capas[0].InsertarElemento(hud);
-            this.Lector = new LectorInputHUD(hud);
+            this.Lector = new LectorInputCustom<PersonajeHUD>(hud);
         }
 
         public void InicializarPolysColoridos()

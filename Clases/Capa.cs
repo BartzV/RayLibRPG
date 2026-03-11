@@ -23,6 +23,7 @@ public class Capa : IDisposable
     public Int32 Alto;
 
     public List<IRenderizable> Elementos;
+
     // Coordenadas de Desplazamiento y ZBuffer para esta capa
     public Vector2 DesplazamientoCamara;    // El desplazamiento de todo lo que se renderice acá.
     public Single FactorProfundidad;        // El ZBuffer global de esta capa.
@@ -47,7 +48,6 @@ public class Capa : IDisposable
         this.TexturaInterna = Raylib.LoadRenderTexture(ancho, alto);
         Raylib.SetTextureFilter(this.TexturaInterna.Texture, ScreenManager.Filtro);
 
-        // El pad de cada lado es la diferencia entre el tamaño de la ventana y el tamaño de la resolución interna, dividido por 2.
         Rectangle destino = new Rectangle(
             (posicion.X * ScreenManager.TamPixel) + ScreenManager.PadX,
             (posicion.Y * ScreenManager.TamPixel) + ScreenManager.PadY,
@@ -102,7 +102,7 @@ public class Capa : IDisposable
         if (_sucio)
         {
             this.Elementos.Sort((x, y) => y.CapaPrioridad.CompareTo(x.CapaPrioridad));
-            _sucio = false;
+            this._sucio = false;
         }
 
         return counter;
