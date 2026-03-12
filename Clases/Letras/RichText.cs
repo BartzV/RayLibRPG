@@ -14,7 +14,7 @@ namespace RayLibRPG.Clases.Letras;
 /// <item>{t##} para espacios a tabular (para no dibujar espacios vacíos)</item>
 /// </list>
 /// </summary>
-public class RichText : IActualizable, IRenderizable, ITransformable
+public class RichText : IEntidad, ITransformable
 {
     // Estado
     public Boolean _eliminado = false;
@@ -63,11 +63,22 @@ public class RichText : IActualizable, IRenderizable, ITransformable
         get => this._amplificacion;
         set => this._amplificacion = Vector2.Abs(value);
     }
+
+    public event Action? OnCambioPrioridad; // Implementación del interfaz
+    private Single _capaPrioridad;
     public Single CapaPrioridad
     {
-        get => this._prioridad;
-        set => this._prioridad = value;
+        get => this._capaPrioridad;
+        set
+        {
+            if (this._capaPrioridad != value)
+            {
+                this._capaPrioridad = value;
+                this.OnCambioPrioridad?.Invoke();
+            }
+        }
     }
+
     public Single Rotacion
     {
         get => this._rotacion;

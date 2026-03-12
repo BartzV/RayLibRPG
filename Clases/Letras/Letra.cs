@@ -5,7 +5,7 @@ using System.Timers;
 
 namespace RayLibRPG.Clases.Letras;
 
-public class Letra : IRenderizable, IActualizable, ITransformable
+public class Letra : IEntidad, ITransformable
 {
     public Boolean _eliminado;
     public Boolean Eliminado
@@ -93,10 +93,19 @@ public class Letra : IRenderizable, IActualizable, ITransformable
         }
     }
 
+    public event Action? OnCambioPrioridad; // Implementación del interfaz
+    private Single _capaPrioridad;
     public Single CapaPrioridad
     {
-        get => this.Sprite.CapaPrioridad;
-        set => this.Sprite.CapaPrioridad = value;
+        get => this._capaPrioridad;
+        set
+        {
+            if (this._capaPrioridad != value)
+            {
+                this._capaPrioridad = value;
+                this.OnCambioPrioridad?.Invoke();
+            }
+        }
     }
 
     public Letra(Char caracter, Vector2 posicion, Vector2 amplitudes, Color? tinte = null, Int32 alfa = 0)

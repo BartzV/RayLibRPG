@@ -51,9 +51,9 @@ public class Program
         LetraManager.Inicializar();        // Importante. Maneja las letras.
 
         ScreenManager.SetFPS(FPS_Options.FPS_120);
-        ScreenManager.LimpiarCapas();
+        //ScreenManager.LimpiarCapas();
 
-        EscenarioActual = new EscenarioPruebaLetras();
+        EscenarioActual = new EscenarioPruebaHUD();
         EscenarioActual.Initialize();
     }
 

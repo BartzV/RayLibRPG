@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace RayLibRPG.Logic.Personaje
 {
-    public class PersonajeHUD : IRenderizable, IActualizable, ITransformable
+    public class PersonajeHUD : IEntidad, ITransformable
     {
         private Boolean _eliminado = false;
         public Boolean Eliminado
@@ -31,14 +31,19 @@ namespace RayLibRPG.Logic.Personaje
             get => this._activo;
             set => this._activo = value;
         }
-        protected Single _capaProfundidad;
+
+        public event Action? OnCambioPrioridad; // Implementación del interfaz
+        private Single _capaPrioridad;
         public Single CapaPrioridad
         {
-            get => this._capaProfundidad;
+            get => this._capaPrioridad;
             set
             {
-                this._capaProfundidad = value;
-                throw new NotImplementedException();
+                if (this._capaPrioridad != value)
+                {
+                    this._capaPrioridad = value;
+                    this.OnCambioPrioridad?.Invoke();
+                }
             }
         }
 

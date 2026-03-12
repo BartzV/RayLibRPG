@@ -23,6 +23,8 @@ internal static class ScreenManager
     // FPS
     private static Int32 _fps = 60; // Frames per second, veces que Draw se llama por segundo.
     private static FPS_Options _fpsOpts = FPS_Options.FPS_60;
+    public static Int64 FPS_Ops = (Int64)_fpsOpts;
+
     public static Int32 FPS { get { return _fps; } }
 
     public static void SetFPS(FPS_Options nuevoFPS)
@@ -71,30 +73,18 @@ internal static class ScreenManager
         _inicializado = true;
     }
 
-    internal static Capa InsertarCapa(Capa capa)
-    {
-        ScreenManager._capas.Add(capa);
-        return capa;
-    }
-    internal static Capa[] InsertarCapas(Capa[] capas)
-    {
-        for (Int32 i = 0; i < capas.Length; i++)
-            ScreenManager._capas.Add(capas[i]);
-        return capas;
-    }
-
-    internal static void LimpiarCapas()
-    {
-        for(int i = 0; i < ScreenManager._capas.Count; i++)
-        {
-            ScreenManager._capas[i].Dispose();
-        }
-        ScreenManager._capas.Clear();
-    }
-    internal static Capa ObtenerCapa(String nombre)
-    {
-        return ScreenManager._capas.First(c => c.Nombre == nombre);
-    }
+    //internal static void LimpiarCapas()
+    //{
+    //    for(int i = 0; i < ScreenManager._capas.Count; i++)
+    //    {
+    //        ScreenManager._capas[i].Dispose();
+    //    }
+    //    ScreenManager._capas.Clear();
+    //}
+    //internal static Capa ObtenerCapa(String nombre)
+    //{
+    //    return ScreenManager._capas.First(c => c.Nombre == nombre);
+    //}
 
     internal static void CambiarResolucion(Int32 ancho, Int32 alto)
     {
@@ -114,7 +104,7 @@ internal static class ScreenManager
         // Cambiar el tamaño de la ventana.
         Raylib.SetWindowSize(ancho, alto);
     }
-
+    [Obsolete]
     public static void DibujarTodo(Single alfa, Int64 frameActual)
     {
         // 1. Renderizado a texturas (cada una a su ritmo)
@@ -172,7 +162,7 @@ internal static class ScreenManager
 /// A FPS_240, el FrameActual & 2 dará 0 cada 4 frames.
 /// 
 /// </summary>
-public enum FPS_Options
+public enum FPS_Options : Int64
 {
     FPS_60 = 0,
     FPS_120 = 1,

@@ -1,9 +1,10 @@
 ﻿using Raylib_cs;
+using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 
 namespace RayLibRPG.Clases;
 
-public class Sprite2D : IRenderizable, IActualizable, ITransformable
+public class Sprite2D : ITransformable, IEntidad
 {
     // Estado
     protected Boolean _eliminado = false;
@@ -29,7 +30,7 @@ public class Sprite2D : IRenderizable, IActualizable, ITransformable
     public Rectangle Fuente;
     public Rectangle Destino;
     protected Single _escala;
-    protected Single _prioridad;
+    protected Single _profundidad;
     protected Vector2 _amplificacion;
     protected Single _rotacion;
     // Posiciones en el mundo real
@@ -50,13 +51,22 @@ public class Sprite2D : IRenderizable, IActualizable, ITransformable
     }
     public Single ProfundidadZ
     {
-        get => this._prioridad;
-        set => this._prioridad = value;
+        get => this._profundidad;
+        set => this._profundidad = value;
     }
+    public event Action? OnCambioPrioridad; // Implementación del interfaz
+    private Single _capaPrioridad;
     public Single CapaPrioridad
     {
-        get => this._prioridad;
-        set => this._prioridad = value;
+        get => this._capaPrioridad;
+        set
+        {
+            if (this._capaPrioridad != value)
+            {
+                this._capaPrioridad = value;
+                this.OnCambioPrioridad?.Invoke();
+            }
+        }
     }
     // Punto de origen para rotaciones y escalados
     public Vector2 Centro;
@@ -192,7 +202,7 @@ public class Sprite2D : IRenderizable, IActualizable, ITransformable
 
 }
 
-public class MultiSprite2D : IRenderizable, IActualizable, ITransformable
+public class MultiSprite2D : IEntidad, ITransformable
 {
     public Boolean _eliminado;
     public Boolean Eliminado
@@ -220,15 +230,32 @@ public class MultiSprite2D : IRenderizable, IActualizable, ITransformable
         get => this.Prototipo.ProfundidadZ;
         set => this.Prototipo.ProfundidadZ = value;
     }
+    public event Action? OnCambioPrioridad; // Implementación del interfaz
     public Single CapaPrioridad
     {
         get => this.Prototipo.CapaPrioridad;
-        set => this.Prototipo.CapaPrioridad = value;
+        set
+        {
+            if (this.Prototipo.CapaPrioridad != value)
+            {
+                this.Prototipo.CapaPrioridad = value;
+                this.OnCambioPrioridad?.Invoke();
+            }
+        }
     }
+    private Vector2 _posicion;
     public Vector2 Posicion
     {
-        get => throw new NotImplementedException();
-        set => throw new NotImplementedException();
+        get => this._posicion;
+        set
+        {
+            Vector2 diff = value - this._posicion;
+            for (Int32 i = 0; i < this.Posiciones.Length; i++)
+            {
+                this.Posiciones[i] += diff;
+            }
+            this._posicion = value;
+        }
     }
     public Single ProfundidadZ
     {
@@ -312,38 +339,4 @@ public class MultiSprite2D : IRenderizable, IActualizable, ITransformable
     {
         throw new NotImplementedException();
     }
-}
-
-public interface IRenderizable
-{
-    Boolean Activo { get; set; }
-    Boolean Eliminado { get; set; }
-    Single CapaPrioridad { get; set; } // Para el Sort dentro de la capa
-
-    Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible);
-}
-
-public interface IActualizable
-{
-    // No hay gran ciencia. Cada cosa renderizable que se mueva debe tener un update.
-    public abstract void Update();
-}
-
-public interface ITransformable
-{
-    Vector2 Posicion { get; set; }
-    Single ProfundidadZ { get; set; } // Lo que llamabas Escala (distancia)
-    Single Rotacion { get; set; }
-    Vector2 Amplificacion { get; set; }
-
-    // Métodos de acción
-    void Mover(Vector2 mov);
-    void Posicionar(Vector2 pos);
-    void Rotar(Single rad);
-    void Estabilizar(Single rad); // Set directo
-
-    // Transformaciones visuales
-    void AplicarZoom(Single delta);
-    void SetZoom(Single valor);
-    void SetFlip(bool x, bool y);
 }

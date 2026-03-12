@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace RayLibRPG.Clases;
 
-public class Poligono2DPlano : IRenderizable, IActualizable, ITransformable
+public class Poligono2DPlano : IEntidad, ITransformable
 {
     private Boolean _eliminado = false;
     public Boolean Eliminado
@@ -56,10 +56,19 @@ public class Poligono2DPlano : IRenderizable, IActualizable, ITransformable
         set => this._prioridad = value;
     }
 
+    public event Action? OnCambioPrioridad; // Implementación del interfaz
+    private Single _capaPrioridad;
     public Single CapaPrioridad
     {
-        get => this._prioridad;
-        set => this._prioridad = value;
+        get => this._capaPrioridad;
+        set
+        {
+            if (this._capaPrioridad != value)
+            {
+                this._capaPrioridad = value;
+                this.OnCambioPrioridad?.Invoke();
+            }
+        }
     }
 
     public Single Rotacion
@@ -181,11 +190,26 @@ public class Poligono2DPlano : IRenderizable, IActualizable, ITransformable
     }
 }
 
-public class Circulo2D : IRenderizable, IActualizable, ITransformable
+public class Circulo2D : IEntidad, ITransformable
 {
     public Boolean Activo { get; set; } = true;
     public Boolean Eliminado { get; set; } = false;
-    public Single CapaPrioridad { get; set; }
+
+    public event Action? OnCambioPrioridad; // Implementación del interfaz
+
+    private Single _capaPrioridad;
+    public Single CapaPrioridad
+    {
+        get => this._capaPrioridad;
+        set
+        {
+            if (this._capaPrioridad != value)
+            {
+                this._capaPrioridad = value;
+                this.OnCambioPrioridad?.Invoke();
+            }
+        }
+    }
 
     // ITransformable
     public Vector2 Posicion { get; set; }

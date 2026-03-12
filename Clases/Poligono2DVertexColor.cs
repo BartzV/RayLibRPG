@@ -1,9 +1,10 @@
 ﻿using Raylib_cs;
+using RayLibRPG.Clases.Config;
 using System.Numerics;
 
 namespace RayLibRPG.Clases;
 
-public class Poligono2DVertexColor : IRenderizable, IActualizable, ITransformable
+public class Poligono2DVertexColor : IEntidad, ITransformable
 {
     private Boolean _eliminado = false;
     public Boolean Eliminado
@@ -32,8 +33,21 @@ public class Poligono2DVertexColor : IRenderizable, IActualizable, ITransformabl
     private Vector2 _posInterpolada;
 
     // Implementación de IDesplazable (igual que Sprite2D)
-    public Vector2 Posicion { get => PosicionActual; set => PosicionActual = value; }
-    public Vector2 Amplificacion { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public Vector2 Posicion
+    {
+        get => PosicionActual;
+        set
+        {
+            PosicionActual = value;
+        }
+    }
+
+    private Vector2 _amplificacion;
+    public Vector2 Amplificacion
+    {
+        get => this._amplificacion;
+        set => this._amplificacion = value;
+    }
 
     protected Single _rotacion;
     public Single Rotacion
@@ -41,19 +55,29 @@ public class Poligono2DVertexColor : IRenderizable, IActualizable, ITransformabl
         get => _rotacion;
         set => this._rotacion = value;
     }
-    protected Single _capaPrioridad;
+
+    public event Action? OnCambioPrioridad; // Implementación del interfaz
+    private Single _capaPrioridad;
     public Single CapaPrioridad
     {
         get => this._capaPrioridad;
-        set => this._capaPrioridad = value;
-    }
-    protected Single _prioridadZ;
-    public Single ProfundidadZ 
-    { 
-        get => this._prioridadZ;
         set
         {
-            this._prioridadZ = value;
+            if (this._capaPrioridad != value)
+            {
+                this._capaPrioridad = value;
+                this.OnCambioPrioridad?.Invoke();
+            }
+        }
+    }
+
+    protected Single _profundidad;
+    public Single ProfundidadZ
+    {
+        get => this._profundidad;
+        set
+        {
+            this._profundidad = value;
         }
     }
 
@@ -186,7 +210,7 @@ public class Poligono2DVertexColor : IRenderizable, IActualizable, ITransformabl
 
     public void SetFlip(Boolean x, Boolean y)
     {
-        throw new NotImplementedException();
+
     }
 }
 

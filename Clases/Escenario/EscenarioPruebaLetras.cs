@@ -12,7 +12,6 @@ namespace RayLibRPG.Clases.Escenario
 {
     internal class EscenarioPruebaLetras : EscenarioEngine
     {
-        public Capa[] Capas = new Capa[2];
         public LectorInput Lector;
         public List<RichText> Richs = new();
         public List<Letra> Letras = new();
@@ -21,26 +20,27 @@ namespace RayLibRPG.Clases.Escenario
 
         public override void Initialize()
         {
-            this.Capas = ScreenManager.InsertarCapas(CapaFactory.CrearCapasPrueba());
+            this.Capas.Add(new Capa("Main", 512, 288, Vector2.Zero));
+            //this.Capas = ScreenManager.InsertarCapas(CapaFactory.CrearCapasPrueba());
             //this.InicializarSprite();
             //this.InicializarEscenario();
             //this.InicializarRich();
-            //this.InicializarLetra();
+            this.InicializarLetra();
             //this.InicializarPolys();
             //this.InicializarCirculo();
             //this.InicializarPolysColoridos();
-            this.InicializarPersonajeHUD();
+            //this.InicializarPersonajeHUD();
         }
 
-        public override void Draw(Single alfa)
+        public override Int32 Draw(Single alfa)
         {
             Int32 counter = 0;
-            for (Int32 i = 0; i < Capas.Length; i++)
-            {
-                counter += this.Capas[i].Renderizar(alfa, EngineManager.FramesTranscurridos);
-            }
+            //for (Int32 i = 0; i < Capas.Length; i++)
+            //{
+            //    counter += this.Capas[i].Renderizar(alfa, EngineManager.FramesTranscurridos);
+            //}
 
-            base.Draw(alfa);
+            counter += base.Draw(alfa);
 
             if (EngineManager.FramesTranscurridos % 30 == 0)
             {
@@ -48,6 +48,7 @@ namespace RayLibRPG.Clases.Escenario
                 String titulo = $"Sir Bartz Engine | FPS: {Raylib.GetFPS()}/{ScreenManager.FPS} | Draws: {counter,2}";
                 Raylib.SetWindowTitle(titulo);
             }
+            return counter;
         }
 
         public void InicializarCirculo()
@@ -114,30 +115,6 @@ namespace RayLibRPG.Clases.Escenario
             this.Capas[0].InsertarElemento(pol1);
             this.Lector = new LectorInputCustom<Poligono2DPlano>(pol1);
         }
-
-        //public void InicializarBarra()
-        //{
-        //    BarraProgreso bar1 = new(new Vector2(0, 0), 128, Color.Green, Color.Red, Color.Gold);
-        //    bar1.Porcentaje = 0.75f;
-        //    bar1.Prioridad = 1000;
-        //    this.Barras.Add(bar1);
-
-        //    BarraProgreso bar2 = new(new Vector2(0, 20), 8, Color.SkyBlue, Color.DarkBlue, Color.Beige);
-        //    bar2.Porcentaje = 0.33f;
-        //    bar2.Prioridad = 1000;
-        //    this.Barras.Add(bar2);
-
-        //    RichText rich = new("{c1}100{c0}/{c2}100", [new Color(255, 255, 255), new Color(204, 255, 204), new Color(255, 204, 255)], null, new Vector2(0, 0), Vector2.One, 1);
-        //    rich.Prioridad = 101;
-
-        //    this.EscenarioU.Add(rich);
-        //    this.EscenarioU.Add(bar1);
-        //    this.EscenarioU.Add(bar2);
-
-        //    this.Capas[0].InsertarElemento(rich);
-        //    this.Capas[0].InsertarElemento(bar1);
-        //    this.Capas[0].InsertarElemento(bar2);
-        //}
 
         public void InicializarEscenario()
         {

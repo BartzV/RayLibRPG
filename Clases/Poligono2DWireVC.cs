@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace RayLibRPG.Clases;
 
-public class Poligono2DWireVC : IRenderizable, IActualizable, ITransformable
+public class Poligono2DWireVC : IEntidad, ITransformable
 {
     private Boolean _eliminado = false;
     public Boolean Eliminado
@@ -42,12 +42,22 @@ public class Poligono2DWireVC : IRenderizable, IActualizable, ITransformable
         get => this._amplificacion;
         set => this._amplificacion = Vector2.Abs(value);
     }
-    protected Single _capaPrioridad;
+
+    public event Action? OnCambioPrioridad; // Implementación del interfaz
+    private Single _capaPrioridad;
     public Single CapaPrioridad
     {
         get => this._capaPrioridad;
-        set => this._capaPrioridad = value;
+        set
+        {
+            if (this._capaPrioridad != value)
+            {
+                this._capaPrioridad = value;
+                this.OnCambioPrioridad?.Invoke();
+            }
+        }
     }
+
     protected Single _prioridad;
     public Single ProfundidadZ
     {

@@ -22,7 +22,7 @@ public class Capa : IDisposable
     public Int32 Ancho;
     public Int32 Alto;
 
-    public List<IRenderizable> Elementos;
+    public List<IEntidad> Elementos;
 
     // Coordenadas de Desplazamiento y ZBuffer para esta capa
     public Vector2 DesplazamientoCamara;    // El desplazamiento de todo lo que se renderice acá.
@@ -55,7 +55,7 @@ public class Capa : IDisposable
             alto * ScreenManager.TamPixel);
         this.DestinoEnPantalla = destino;
 
-        this.Elementos = new List<IRenderizable>();
+        this.Elementos = new List<IEntidad>();
         this.Fondo = Color.White;
         this.Tinte = Color.White;
     }
@@ -84,7 +84,15 @@ public class Capa : IDisposable
 
     public Int32 Renderizar(Single alfa, Int64 framesTotales)
     {
-        if (!this.Activa) return 0;
+        if (!this.Activa) 
+            return 0;
+
+        if (_sucio)
+        {
+            this.Elementos.Sort((x, y) => y.CapaPrioridad.CompareTo(x.CapaPrioridad));
+            this._sucio = false;
+        }
+
         Int32 counter = 0;
         Raylib.BeginTextureMode(this.TexturaInterna);
         Raylib.ClearBackground(this.Fondo);
@@ -99,47 +107,39 @@ public class Capa : IDisposable
         this.FramesTranscurridos++;
         Raylib.EndTextureMode();
 
-        if (_sucio)
-        {
-            this.Elementos.Sort((x, y) => y.CapaPrioridad.CompareTo(x.CapaPrioridad));
-            this._sucio = false;
-        }
-
         return counter;
     }
 
-    public void InsertarElemento(IRenderizable elemento)
+    public void Actualizar()
     {
-        this.Elementos.Add(elemento);
-        this._sucio = true;
+        for(Int32 i = 0; i < this.Elementos.Count; i++)
+        {
+            this.Elementos[i].Update();
+        }
     }
-    public void InsertarElementos(IRenderizable[] elemento)
+    private void MarcarCapaComoSucia()
     {
-        this.Elementos.AddRange(elemento);
         this._sucio = true;
     }
 
-    public void DebugCorners()
+    public void InsertarElemento(IEntidad elemento)
     {
-        Sprite2D[] sprites = new Sprite2D[4];
-        sprites[0] = new Sprite2D(Texture2DManager.GetTexture("Letra"),
-            (Rectangle)LetraManager.GetRectangle('~')!,
-            new Rectangle(this.Posicion.X + 4, this.Posicion.Y + 4, 8, 8));
-        sprites[1] = new Sprite2D(Texture2DManager.GetTexture("Letra"),
-            (Rectangle)LetraManager.GetRectangle('~')!,
-            new Rectangle(this.Ancho - 4, this.Posicion.Y + 4, 8, 8));
-        sprites[2] = new Sprite2D(Texture2DManager.GetTexture("Letra"),
-            (Rectangle)LetraManager.GetRectangle('~')!,
-            new Rectangle(this.Posicion.X + 4, this.Alto - 4, 8, 8));
-        sprites[3] = new Sprite2D(Texture2DManager.GetTexture("Letra"),
-            (Rectangle)LetraManager.GetRectangle('~')!,
-            new Rectangle(this.Ancho - 4, this.Alto - 4, 8, 8));
-        this.Elementos.AddRange(sprites);
+        elemento.OnCambioPrioridad += MarcarCapaComoSucia;
+        this.Elementos.Add(elemento);
+        this._sucio = true;
     }
 
     public void LimpiarBasura()
     {
-        this.Elementos.RemoveAll((x) => x.Eliminado);
+        this.Elementos.RemoveAll((x) => 
+        {
+            if (x.Eliminado)
+            {
+                x.OnCambioPrioridad -= MarcarCapaComoSucia;
+                return x.Eliminado; 
+            }
+            return false;
+        });
     }
 
     // Pensando...
