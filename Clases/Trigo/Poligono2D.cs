@@ -1,7 +1,7 @@
 ﻿using Raylib_cs;
 using System.Numerics;
 
-namespace RayLibRPG.Clases;
+namespace RayLibRPG.Clases.Trigo;
 
 public class Poligono2DPlano : IEntidad, ITransformable
 {

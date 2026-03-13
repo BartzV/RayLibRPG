@@ -2,6 +2,7 @@
 using RayLibRPG.Clases.Config;
 using RayLibRPG.Clases.Inputs;
 using RayLibRPG.Clases.Letras;
+using RayLibRPG.Clases.Trigo;
 using RayLibRPG.Logic.Personaje;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ public class EscenarioPruebaHUD : EscenarioEngine
     {
         this.InicializarCapas();
         this.InicializarPersonajes();
-        //this.InicializarLetras();
+        this.InicializarLetras();
         this.InicializarCapaHUD();
     }
 
@@ -32,7 +33,7 @@ public class EscenarioPruebaHUD : EscenarioEngine
         });
         Capas.Add(new("Main", 512, 288 - 24 * 4, new Vector2(0, 24))
         {
-            Fondo = Color.SkyBlue,
+            Fondo = Color.RayWhite,
         });
         Capas.Add(new("HUD", 512, 24 * 3, new Vector2(0, 288 - 24 * 3))
         {
@@ -60,7 +61,7 @@ public class EscenarioPruebaHUD : EscenarioEngine
         RichText rich = new("Praderas", [Color.White], null, new Vector2(24, 12), new Vector2(2, 2), 1, null);
         this.Capas[0].InsertarElemento(rich);
 
-        Letra a = new Letra('A', new Vector2(10, 10), Vector2.One);
+        Letra a = new Letra('O', new Vector2(10, 10), Vector2.One);
         this.Capas[1].InsertarElemento(a);
 
         input.Push(new LectorInputDebug<Letra>(a));
@@ -70,20 +71,46 @@ public class EscenarioPruebaHUD : EscenarioEngine
     {
         PersonajeHUD hud = new PersonajeHUD(this.personajes[0], new Vector2(16, 16));
         this.Capas[2].InsertarElemento(hud);
+        Int32 w = 256, h = 24 * 3;
 
         (Vector2, Color)[] vecs =
-            [
-                (new Vector2(0, 0), new Color(0, 64, 192)),
-                (new Vector2(0, 24 * 3), new Color(0, 16, 64)),
-                (new Vector2(512, 0), new Color(0, 96, 255)),
-                (new Vector2(512, 24 * 3), new Color(0, 48, 192))
-            ];
+        [
+            (new Vector2(0, 0), new Color(0, 64, 192)),
+            (new Vector2(0, h / 2), new Color(0, 16, 64)),
+            (new Vector2(w / 2, 0), new Color(0, 96, 255)),
+            (new Vector2(w / 2, h / 2), new Color(0, 48, 192)),
+            (new Vector2(w, 0), new Color(0, 255, 192)),
+            (new Vector2(w, h / 2), new Color(0, 192, 164)),
+            // Segunda fila???
+            (new Vector2(0, h / 2), new Color(0, 16, 64)),
+            (new Vector2(0, h), new Color(192, 64, 0)),
+            (new Vector2(w / 2, h / 2), new Color(164, 64, 104)),
 
-        Poligono2DVertexColor vhud = new(vecs, Vector2.Zero)
-        {
-            CapaPrioridad = 100
-        };
-        this.Capas[2].InsertarElemento(vhud);
+        ];
+
+        (Vector2, Color)[] arcoirisFan =
+        [
+            // Centro (El pivot)
+            (new Vector2(w / 2f, h / 2f), Color.Green),    
+            // Centro Arriba
+            (new Vector2(w / 2f, 0f), Color.Yellow),
+            // Parte Izquierda
+            (new Vector2(0f, 0f), Color.Orange),
+            (new Vector2(0f, h / 2f), Color.Yellow),
+            (new Vector2(0f, h), Color.Green),
+            // Centro Abajo
+            (new Vector2(w / 2f, h), Color.SkyBlue),
+            // Parte Derecha
+            (new Vector2(w, h), Color.Blue),
+            (new Vector2(w, h / 2f), Color.SkyBlue),
+            (new Vector2(w, 0f), Color.Green),
+            // Gran Cierre
+            (new Vector2(w / 2f, 0f), Color.Yellow),
+        ];
+
+
+        Poligono2DVertexColor vhud = new(vecs, new Vector2(w / 4, h / 4), true);
+        this.Capas[1].InsertarElemento(vhud);
         input.Push(new LectorInputDebug<Poligono2DVertexColor>(vhud));
     }
 
@@ -94,7 +121,10 @@ public class EscenarioPruebaHUD : EscenarioEngine
         // 2. Actualizamos los contadores de las teclas
         InputConfig.Actualizar();
         // 3. El LectorInput ahora usa el nuevo método
-        this.input.Peek()?.Procesar();
+        if (this.input.Count != 0)
+        {
+            this.input.Peek().Procesar();
+        }
     }
 
     public override Int32 Draw(Single alfa)

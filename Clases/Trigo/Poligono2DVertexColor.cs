@@ -1,9 +1,11 @@
 ﻿using Raylib_cs;
+using RayLibRPG.Clases.Config;
+using RayLibRPG.Clases.Letras;
 using System.Numerics;
 
-namespace RayLibRPG.Clases;
+namespace RayLibRPG.Clases.Trigo;
 
-public class Poligono2DWireVC : IEntidad, ITransformable
+public class Poligono2DVertexColor : IEntidad, ITransformable
 {
     private Boolean _eliminado = false;
     public Boolean Eliminado
@@ -15,13 +17,16 @@ public class Poligono2DWireVC : IEntidad, ITransformable
             this.Activo = !value;
         }
     }
+
     protected Boolean _activo = true;
     public Boolean Activo
     {
         get => this._activo;
         set => this._activo = value;
     }
+
     public Vector2[] VerticesOriginales; // La forma base
+    private Letra[] _debugVertices;
     private Vector2[] _verticesProcesados; // Para no tocar los originales
     private Color[] _colores;
 
@@ -29,18 +34,33 @@ public class Poligono2DWireVC : IEntidad, ITransformable
     public Vector2 PosicionAnterior;
     private Vector2 _posInterpolada;
 
-    // En Radianes!!!
-    private Single _rotacion;
+    // Implementación de IDesplazable (igual que Sprite2D)
+    public Vector2 Posicion
+    {
+        get => PosicionActual;
+        set
+        {
+            Vector2 dif = value - PosicionActual;
+            this.PosicionActual = value;
+            for (Int32 i = 0; i < this._debugVertices.Length; i++)
+            {
+                this._debugVertices[i].Posicion += dif;
+            }
+        }
+    }
+
+    private Vector2 _amplificacion;
+    public Vector2 Amplificacion
+    {
+        get => this._amplificacion;
+        set => this._amplificacion = value;
+    }
+
+    protected Single _rotacion;
     public Single Rotacion
     {
         get => _rotacion;
         set => this._rotacion = value;
-    }
-    protected Vector2 _amplificacion;
-    public Vector2 Amplificacion
-    {
-        get => this._amplificacion;
-        set => this._amplificacion = Vector2.Abs(value);
     }
 
     public event Action? OnCambioPrioridad; // Implementación del interfaz
@@ -54,40 +74,44 @@ public class Poligono2DWireVC : IEntidad, ITransformable
             {
                 this._capaPrioridad = value;
                 this.OnCambioPrioridad?.Invoke();
+
             }
         }
     }
 
-    protected Single _prioridad;
+    protected Single _profundidad;
     public Single ProfundidadZ
     {
-        get => this._prioridad;
-        set => this._prioridad = value;
+        get => this._profundidad;
+        set
+        {
+            this._profundidad = value;
+        }
     }
 
-    public Boolean EsCerrado;
     public Boolean EsStrip; // True para Strip, False para Fan
     public Single RadioMaximo;
 
-    public Poligono2DWireVC((Vector2 vertex, Color color)[] vertices, Vector2 pos, Boolean esCerrado = false, Boolean esStrip = true)
+    public Poligono2DVertexColor((Vector2 vertex, Color color)[] vertices, Vector2 pos, Boolean esStrip = true)
     {
-        if (vertices == null || vertices.Length < 2)
-            throw new ArgumentException("¡Vértices insuficientes! ¡Esto no forma un wire!");
+        if (vertices == null || vertices.Length < 3)
+            throw new ArgumentException("¡Vértices insuficientes! ¡Esto no forma un triángulo!");
         this.VerticesOriginales = new Vector2[vertices.Length];
+        this._debugVertices = new Letra[vertices.Length];
         this._verticesProcesados = new Vector2[vertices.Length];
         this._colores = new Color[vertices.Length];
+        this.ProfundidadZ = 1F;
+        this.Amplificacion = Vector2.One;
 
         for (Int32 i = 0; i < vertices.Length; i++)
         {
+            this._debugVertices[i] = new Letra('~', pos + vertices[i].vertex, Vector2.One, vertices[i].color);
             this.VerticesOriginales[i] = vertices[i].vertex;
             this._colores[i] = vertices[i].color;
         }
 
         this.PosicionActual = pos;
         this.PosicionAnterior = pos;
-        this.ProfundidadZ = 1F;
-        this.Amplificacion = Vector2.One;
-        this.EsCerrado = esCerrado;
         this.EsStrip = esStrip;
 
         // Calculamos el radio máximo una sola vez
@@ -106,6 +130,13 @@ public class Poligono2DWireVC : IEntidad, ITransformable
     {
         if (this.Activo)
             this.PosicionAnterior = this.PosicionActual;
+        if ((ConfigManager.DEBUG & DebugMode.Centers) != 0)
+        {
+            for (Int32 i = 0; i < this._debugVertices.Length; i++)
+            {
+                this._debugVertices[i].Update();
+            }
+        }
     }
 
     public Int32 Draw(Single alfa, Vector2 desp, Single zbuf, Rectangle areaVisible)
@@ -143,31 +174,47 @@ public class Poligono2DWireVC : IEntidad, ITransformable
 
         if (EsStrip)
         {
-            Rlgl.Begin(DrawMode.Lines);
-            for (int i = 0; i < _verticesProcesados.Length - 1; i++)
+            // Para simular un STRIP con TRIANGLES manuales:
+            Rlgl.Begin(DrawMode.Triangles);
+            for (int i = 0; i < _verticesProcesados.Length - 2; i++)
             {
-                DibujarVertice(i);
-                DibujarVertice(i + 1);
-
-            }
-            if (this.EsCerrado)
-            {
-                DibujarVertice(_verticesProcesados.Length - 1);
-                DibujarVertice(0);
+                // Triángulo i, i+1, i+2
+                // Ojo: en los Strips, el orden de los vértices se invierte en cada paso para mantener el "front face"
+                if (i % 2 == 0)
+                {
+                    DibujarVertice(i);
+                    DibujarVertice(i + 1);
+                    DibujarVertice(i + 2);
+                }
+                else
+                {
+                    DibujarVertice(i + 1);
+                    DibujarVertice(i);
+                    DibujarVertice(i + 2);
+                }
             }
         }
         else
         {
             // Para un FAN (estilo PS1 total)
-            Rlgl.Begin(DrawMode.Lines);
-            for (int i = 1; i < _verticesProcesados.Length; i++)
+            Rlgl.Begin(DrawMode.Triangles);
+            for (int i = 1; i < _verticesProcesados.Length - 1; i++)
             {
                 DibujarVertice(0); // El centro del abanico
                 DibujarVertice(i);
+                DibujarVertice(i + 1);
             }
         }
 
         Rlgl.End();
+
+        if ((ConfigManager.DEBUG & DebugMode.Centers) != 0)
+        {
+            for (Int32 i = 0; i < this._debugVertices.Length; i++)
+            {
+                this._debugVertices[i].Draw(alfa, desp, zbuf, areaVisible);
+            }
+        }
         return 1;
     }
 
@@ -178,18 +225,17 @@ public class Poligono2DWireVC : IEntidad, ITransformable
         Rlgl.Vertex2f(_verticesProcesados[index].X, _verticesProcesados[index].Y);
     }
 
-    // Implementación de IDesplazable (igual que Sprite2D)
-    public Vector2 Posicion { get => PosicionActual; set => PosicionActual = value; }
+
     public void Mover(Vector2 mov) => this.Posicion += mov;
     public void Posicionar(Vector2 pos) => this.Posicion = pos;
-    public void SetZoom(Single zoom) => this.ProfundidadZ = Math.Max(zoom, 0);
-    public void AplicarZoom(Single zoom) => this.ProfundidadZ = Math.Max(this.ProfundidadZ + zoom, 0);
+    public void AplicarZoom(Single zoom) => this.ProfundidadZ = Math.Max(0, this.ProfundidadZ + zoom);
+    public void SetZoom(Single zoom) => this.ProfundidadZ += zoom;
     public void Rotar(Single rad) => this.Rotacion += rad;
     public void Estabilizar(Single rad) => this.Rotacion = rad;
 
     public void SetFlip(Boolean x, Boolean y)
     {
-        throw new NotImplementedException();
+
     }
 }
 

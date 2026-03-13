@@ -2,6 +2,7 @@
 using RayLibRPG.Clases.Config;
 using RayLibRPG.Clases.Inputs;
 using RayLibRPG.Clases.Letras;
+using RayLibRPG.Clases.Trigo;
 using RayLibRPG.Logic.Personaje;
 using System;
 using System.Collections.Generic;
