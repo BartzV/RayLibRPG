@@ -12,7 +12,7 @@ internal static class ConfigManager
     public const String RUTA_LETRAS = @"Assets/FuentesRES.png";
     public const String RUTA_BG_BOSQUE = @"Assets/BackGroundBosque.PNG";
 
-    public const DebugMode DEBUG = DebugMode.Centers;
+    public const DebugMode DEBUG = DebugMode.None;
 }
 
 [Flags]

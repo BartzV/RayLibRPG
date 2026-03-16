@@ -3,6 +3,7 @@ using RayLibRPG.Clases.Config;
 using RayLibRPG.Clases.Inputs;
 using RayLibRPG.Clases.Letras;
 using RayLibRPG.Clases.Trigo;
+using RayLibRPG.Clases.Trigo.Barras;
 using RayLibRPG.Logic.Personaje;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ public class EscenarioPruebaHUD : EscenarioEngine
         this.InicializarCapas();
         this.InicializarPersonajes();
         this.InicializarLetras();
-        this.InicializarCapaHUD();
+        this.InicializarHUD();
     }
 
     protected void InicializarCapas()
@@ -48,6 +49,7 @@ public class EscenarioPruebaHUD : EscenarioEngine
         {
             Nombre = "Agrass",
             ColorPrimario = new Color(192, 0, 128),
+            Raza = Logic.Reglas.Tags.RazaTag.Humano,
             PCActual = 1000,
             PCMax = 1000,
             PCMaxActual = 1000,
@@ -67,7 +69,27 @@ public class EscenarioPruebaHUD : EscenarioEngine
         input.Push(new LectorInputDebug<Letra>(a));
     }
 
-    protected void InicializarCapaHUD()
+    protected void InicializarHUD()
+    {
+        Int32 w = 512, h = 24 * 3;
+        (Vector2, Color)[] vecs =
+        [
+            (new Vector2(0, 0),     new Color(000, 192, 064)),
+            (new Vector2(0, h),     new Color(000, 128, 016)),
+            (new Vector2(w / 2, 0), new Color(000, 128, 016)),
+            (new Vector2(w / 2, h), new Color(000, 164, 032)),
+            (new Vector2(w, 0),     new Color(000, 164, 032)),
+            (new Vector2(w, h),     new Color(000, 096, 000)),
+        ];
+
+        Poligono2DVertexColor vhud = new(vecs, new Vector2(0, 0), true);
+        this.Capas[2].InsertarElemento(vhud);
+
+        PersonajeHUD pjHUD = new(personajes[0], new Vector2(24, 16));
+        this.Capas[2].InsertarElemento(pjHUD);
+    }
+
+    protected void DibujarMierda()
     {
         PersonajeHUD hud = new PersonajeHUD(this.personajes[0], new Vector2(16, 16));
         this.Capas[2].InsertarElemento(hud);
@@ -133,7 +155,6 @@ public class EscenarioPruebaHUD : EscenarioEngine
 
         if (EngineManager.FramesTranscurridos % 30 == 0)
         {
-            //string titulo = $"Sir Bartz Engine | FPS: {Raylib.GetFPS()}/{ScreenManager.FPS} | Ticks: {EngineManager.TicksTranscurridos} | Frames: {EngineManager.FramesTranscurridos}";
             String titulo = $"Sir Bartz Engine | FPS: {Raylib.GetFPS()}/{ScreenManager.FPS} | Draws: {counter,2}";
             Raylib.SetWindowTitle(titulo);
         }

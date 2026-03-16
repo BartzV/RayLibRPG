@@ -5,7 +5,7 @@ using RayLibRPG.Clases.Letras;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace RaylibRPG;
+namespace RayLibRPG;
 
 public class Program
 {

@@ -8,6 +8,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Assets\Personajes\**" />
+	  <EmbeddedResource Remove="Assets\Personajes\**" />
+	  <None Remove="Assets\Personajes\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Compile Remove="Clases\Letras\InputBuffer.cs" />
 	</ItemGroup>
 
@@ -19,10 +25,6 @@
 		<None Update="Assets\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Assets\Personajes\Agrass\" />
 	</ItemGroup>
 
 </Project>
