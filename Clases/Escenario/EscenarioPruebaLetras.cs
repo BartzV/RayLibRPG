@@ -57,7 +57,6 @@ namespace RayLibRPG.Clases.Escenario
             Circulo2D c = new(Vector2.Zero, 12, Color.Red);
             this.EscenarioU.Add(c);
             this.Capas[0].InsertarElemento(c);
-            this.Lector = new LectorInputCustom<Circulo2D>(c);
         }
 
         public void InicializarPersonajeHUD()
@@ -75,7 +74,6 @@ namespace RayLibRPG.Clases.Escenario
             PersonajeHUD hud = new(p1, new Vector2(-200, -100));
             this.EscenarioU.Add(hud);
             this.Capas[0].InsertarElemento(hud);
-            this.Lector = new LectorInputCustom<PersonajeHUD>(hud);
         }
 
         public void InicializarPolysColoridos()
@@ -114,7 +112,6 @@ namespace RayLibRPG.Clases.Escenario
             pol1.Rotacion = 90;
             this.EscenarioU.Add(pol1);
             this.Capas[0].InsertarElemento(pol1);
-            this.Lector = new LectorInputCustom<Poligono2DPlano>(pol1);
         }
 
         public void InicializarEscenario()
@@ -150,7 +147,6 @@ namespace RayLibRPG.Clases.Escenario
             Letra l = new Letra('A', Vector2.Zero, Vector2.One, Color.Red);
 
             this.Letras.Add(l);
-            this.Lector = new LectorInputDebug<Letra>(l);
             this.EscenarioU.Add(l);
             this.Capas[0].InsertarElemento(l);
         }
@@ -159,8 +155,6 @@ namespace RayLibRPG.Clases.Escenario
         {
             Sprite2D l = new Sprite2D(Texture2DManager.GetTexture("Letra"), new Rectangle(8, 0, 8, 8), Vector2.Zero, Vector2.One * 8, new Vector2(2, 1));
             l.Rotacion = 90F;
-            this.Lector = new LectorInputCustom<Sprite2D>(l);
-
 
             this.EscenarioU.Add(l);
             this.Capas[0].InsertarElemento(l);

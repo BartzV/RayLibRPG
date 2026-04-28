@@ -7,12 +7,19 @@ using System.Text;
 
 namespace RayLibRPG.Clases.Escenario
 {
+    /// <summary>
+    /// Los escenarios son los estados del juego. Cada uno tiene sus propias capas, que se actualizan y renderizan a su ritmo.<br/>
+    /// Ejemplo rápido: HUD, menú de pausa, etc.
+    /// </summary>
     public abstract class EscenarioEngine
     {
         public List<Capa> Capas { get; set; } = new();
         public Int64 FramesTranscurridos { get; set; } = 0;
         public Int64 TicksTranscurridos { get; set; } = 0;
 
+        /// <summary>
+        /// Acá se actualiza la lógica del juego. El juego va a <see cref="ConfigManager.TPS"/> ticks por segundo.
+        /// </summary>
         public virtual void Update()
         {
             for(Int32 i = 0; i < Capas.Count; i++)
@@ -22,6 +29,14 @@ namespace RayLibRPG.Clases.Escenario
             this.TicksTranscurridos++;
         }
 
+        /// <summary>
+        /// Acá se dibuja a <see cref="ScreenManager.FPS"/> FPS. Cada capa se renderiza a su ritmo, y luego se ensamblan todas las texturas en la pantalla.<br/>
+        /// Como el juego va a <see cref="ConfigManager.TPS"/> ticks por segundo,
+        /// cada capa puede renderizarse a más FPS de los TPS, o a la misma cantidad.<br/>
+        /// Por ejemplo, se puede tener una capa a 120FPS y otras 2 a 60FPS.
+        /// </summary>
+        /// <param name="alfa"></param>
+        /// <returns></returns>
         public virtual Int32 Draw(Single alfa)
         {
             Int32 cant = 0;

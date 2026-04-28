@@ -1,4 +1,5 @@
 ﻿using Raylib_cs;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace RayLibRPG.Clases.Config;
@@ -8,7 +9,16 @@ internal static class ScreenManager
     private static Boolean _inicializado = false;
     // Lienzos donde se dibuja todo. Se escala a la resolución de la ventana al final de cada Draw.
     private static List<Capa> _capas = new();
-    public static TextureFilter Filtro = TextureFilter.Point;
+    public static TextureFilter Filtro
+    {
+        get => _filtro;
+        set
+        {
+            _filtro = value;
+            
+        }
+    }
+    private static TextureFilter _filtro;
     // Escalado de la resolución interna a la ventana.
     public static Int32 PantallaX = 512 * 2;
     public static Int32 PantallaY = 288 * 2;
@@ -26,6 +36,8 @@ internal static class ScreenManager
     public static Int64 FPS_Ops = (Int64)_fpsOpts;
 
     public static Int32 FPS { get { return _fps; } }
+
+    private static readonly (Int32 X, Int32 Y)[] _resoluciones = [(512, 288), (512 * 2, 288 * 2)];
 
     public static void SetFPS(FPS_Options nuevoFPS)
     {
@@ -54,8 +66,8 @@ internal static class ScreenManager
     {
         // 1. Usamos C# puro para saber el tamaño del monitor principal
         // Esto funciona ANTES de cualquier ventana abierta.
-        int monitorAncho = 512 * 2;
-        int monitorAlto = 288 * 2;
+        int monitorAncho = 512 * 2 + 10;
+        int monitorAlto = 288 * 2 + 10;
 
         // 2. Configuramos los Flags para que no tenga bordes
         //Raylib.SetConfigFlags(ConfigFlags.MaximizedWindow);

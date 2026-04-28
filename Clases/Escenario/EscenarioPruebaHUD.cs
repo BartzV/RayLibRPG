@@ -16,13 +16,57 @@ public class EscenarioPruebaHUD : EscenarioEngine
 {
     public Stack<LectorInput> input = new();
     public List<Personaje> personajes = new();
+    public List<Letra> letras = new();
 
     public override void Initialize()
     {
         this.InicializarCapas();
+        //this.InicializarBench();
         this.InicializarPersonajes();
-        this.InicializarLetras();
-        this.InicializarHUD();
+        //this.InicializarLetras();
+        //this.InicializarHUD();
+        this.DibujarMierda();
+    }
+
+    protected void InicializarBench()
+    {
+        this.Capas.Add(new("Main", 512, 288, new Vector2(0, 0))
+        {
+            Fondo = Color.RayWhite,
+        });
+
+        for(var x = 0; x < 64; x++)
+        {
+            for(var y = 0; y < 36; y++)
+            {
+                Letra a = new Letra('+', new Vector2(x * 8 + 4, y * 8 + 4), Vector2.One)
+                {
+                    Tinte = new Color(Math.Clamp(512 - x * 8, 0, 255), Math.Clamp(x * 8, 0, 255), y * 4),
+                    CapaPrioridad = 100F,
+                };
+                Letra b = new Letra('~', new Vector2(x * 8 + 4, y * 8 + 4), Vector2.One)
+                {
+                    Tinte = new Color(64, 64, 64),
+                    CapaPrioridad = 105F,
+                    Rotacion = 45F
+                };
+                Letra c = new Letra('\uFF00', new Vector2(x * 8 + 4, y * 8 + 4), Vector2.One)
+                {
+                    Tinte = new Color(64, 64, 64),
+                    CapaPrioridad = 105F,
+                    Rotacion = 45F
+                };
+
+                letras.Add(a);
+                this.Capas[0].InsertarElemento(a);
+
+                letras.Add(b);
+                this.Capas[0].InsertarElemento(b);
+
+                letras.Add(c);
+                this.Capas[0].InsertarElemento(c);
+            }
+        }
     }
 
     protected void InicializarCapas()
@@ -66,7 +110,6 @@ public class EscenarioPruebaHUD : EscenarioEngine
         Letra a = new Letra('O', new Vector2(10, 10), Vector2.One);
         this.Capas[1].InsertarElemento(a);
 
-        input.Push(new LectorInputDebug<Letra>(a));
     }
 
     protected void InicializarHUD()
@@ -93,20 +136,18 @@ public class EscenarioPruebaHUD : EscenarioEngine
     {
         PersonajeHUD hud = new PersonajeHUD(this.personajes[0], new Vector2(16, 16));
         this.Capas[2].InsertarElemento(hud);
-        Int32 w = 256, h = 24 * 3;
+        Int32 w = 256, h = 24 * 2;
 
         (Vector2, Color)[] vecs =
         [
-            (new Vector2(0, 0), new Color(0, 64, 192)),
-            (new Vector2(0, h / 2), new Color(0, 16, 64)),
-            (new Vector2(w / 2, 0), new Color(0, 96, 255)),
-            (new Vector2(w / 2, h / 2), new Color(0, 48, 192)),
-            (new Vector2(w, 0), new Color(0, 255, 192)),
-            (new Vector2(w, h / 2), new Color(0, 192, 164)),
-            // Segunda fila???
-            (new Vector2(0, h / 2), new Color(0, 16, 64)),
+            (new Vector2(0, 0), new Color(255, 0, 0)),
             (new Vector2(0, h), new Color(192, 64, 0)),
-            (new Vector2(w / 2, h / 2), new Color(164, 64, 104)),
+            (new Vector2(w / 3, 0), new Color(192, 64, 0)),
+            (new Vector2(w / 3, h), new Color(255, 255, 0)),
+            (new Vector2(w * 2 / 3, 0), new Color(255, 255, 0)),
+            (new Vector2(w * 2 / 3, h), new Color(0, 192, 32)),
+            (new Vector2(w, 0), new Color(0, 192, 32)),
+            (new Vector2(w, h), new Color(0, 128, 192)),
 
         ];
 
@@ -133,7 +174,8 @@ public class EscenarioPruebaHUD : EscenarioEngine
 
         Poligono2DVertexColor vhud = new(vecs, new Vector2(w / 4, h / 4), true);
         this.Capas[1].InsertarElemento(vhud);
-        input.Push(new LectorInputDebug<Poligono2DVertexColor>(vhud));
+        LectorMovimiento<Poligono2DVertexColor> input = new(vhud);
+        this.input.Push(input);
     }
 
     public override void Update()

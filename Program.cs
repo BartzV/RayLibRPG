@@ -23,7 +23,9 @@ public class Program
             Double frameTime = tiempoActual - tiempoAnterior;
             tiempoAnterior = tiempoActual;
 
-            if (frameTime > 0.25) frameTime = 0.25;
+            // Freno para que el juego en caso de tildarse no siga avanzando.
+            if (frameTime > 0.25) 
+                frameTime = 0.25;
 
             tiempoAcumulado += frameTime;
 
@@ -66,14 +68,6 @@ public class Program
     public static void Draw(Single alfa)
     {
         EscenarioActual.Draw(alfa);
-
-        //ScreenManager.DibujarTodo(alfa, EngineManager.FramesTranscurridos);
-        
-        //if (EngineManager.FramesTranscurridos % 30 == 0)
-        //{
-        //    string titulo = $"Sir Bartz Engine | FPS: {Raylib.GetFPS()}/{ScreenManager.FPS} | Ticks: {EngineManager.TicksTranscurridos} | Frames: {EngineManager.FramesTranscurridos}";
-        //    Raylib.SetWindowTitle(titulo);
-        //}
     }
 
 }
