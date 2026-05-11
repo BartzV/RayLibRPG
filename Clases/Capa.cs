@@ -60,6 +60,11 @@ public class Capa : IDisposable
         this.Tinte = Color.White;
     }
 
+    /// <summary>
+    /// Con esto me refiero a la resolución interna de la capa, no de la pantalla.
+    /// </summary>
+    /// <param name="ancho">Tratá que no sea mayor a <see cref="ConfigManager.WIDTH"/></param>
+    /// <param name="alto">Tratá que no sea mayor a <see cref="ConfigManager.HEIGHT"/></param>
     public void CambiarResolucion(Int32 ancho, Int32 alto)
     {
         Raylib.UnloadRenderTexture(this.TexturaInterna);
@@ -76,10 +81,29 @@ public class Capa : IDisposable
             alto * ScreenManager.TamPixel);
     }
 
+    public void RecargarResolucion()
+    {
+        Raylib.UnloadRenderTexture(this.TexturaInterna);
+        this.TexturaInterna = Raylib.LoadRenderTexture(this.Ancho, this.Alto);
+        Raylib.SetTextureFilter(this.TexturaInterna.Texture, ScreenManager.Filtro);
+        
+        // Reorganizando valores.
+        this.DestinoEnPantalla = new Rectangle(
+            (this.Posicion.X * ScreenManager.TamPixel) + ScreenManager.PadX,
+            (this.Posicion.Y * ScreenManager.TamPixel) + ScreenManager.PadY,
+            this.Ancho * ScreenManager.TamPixel,
+            this.Alto * ScreenManager.TamPixel);
+    }
+
+    public void CambiarFiltro()
+    {
+        Raylib.SetTextureFilter(this.TexturaInterna.Texture, ScreenManager.Filtro);
+    }
+
     public void Reposicionar(Vector2 nuevaPosicion)
     {
         this.Posicion = nuevaPosicion;
-        CambiarResolucion(this.Ancho, this.Alto);
+        this.CambiarResolucion(this.Ancho, this.Alto);
     }
 
     public Int32 Renderizar(Single alfa, Int64 framesTotales)

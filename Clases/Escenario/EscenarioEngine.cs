@@ -11,8 +11,10 @@ namespace RayLibRPG.Clases.Escenario
     /// Los escenarios son los estados del juego. Cada uno tiene sus propias capas, que se actualizan y renderizan a su ritmo.<br/>
     /// Ejemplo rápido: HUD, menú de pausa, etc.
     /// </summary>
-    public abstract class EscenarioEngine
+    public abstract class EscenarioEngine : IDisposable
     {
+        protected Boolean _eliminado = false;
+
         public List<Capa> Capas { get; set; } = new();
         public Int64 FramesTranscurridos { get; set; } = 0;
         public Int64 TicksTranscurridos { get; set; } = 0;
@@ -86,6 +88,22 @@ namespace RayLibRPG.Clases.Escenario
             {
                 this.Capas[i].LimpiarBasura();
             }
+        }
+
+        /// <summary>
+        /// Acordate del Using!!!
+        /// Por cierto, esto funciona. Tratá de no hacerle <see langword="override"></see> por favor.
+        /// </summary>
+        public void Dispose()
+        {
+            if (this._eliminado) return;
+            for(Int32 i = 0; i < this.Capas.Count; i++)
+            {
+                this.Capas[i].Dispose();
+            }
+            this._eliminado = true;
+            // Esto es para que el GC no llame al finalizador, ya que ya liberamos los recursos manualmente.
+            GC.SuppressFinalize(this);
         }
     }
 }

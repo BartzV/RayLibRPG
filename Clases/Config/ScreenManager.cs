@@ -1,6 +1,7 @@
 ﻿using Raylib_cs;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace RayLibRPG.Clases.Config;
 
@@ -8,17 +9,16 @@ internal static class ScreenManager
 {
     private static Boolean _inicializado = false;
     // Lienzos donde se dibuja todo. Se escala a la resolución de la ventana al final de cada Draw.
-    private static List<Capa> _capas = new();
+    //private static List<Capa> _capas = new();
     public static TextureFilter Filtro
     {
         get => _filtro;
         set
         {
-            _filtro = value;
-            
+            CambiarFiltro(value);
         }
     }
-    private static TextureFilter _filtro;
+    private static TextureFilter _filtro = TextureFilter.Point;
     // Escalado de la resolución interna a la ventana.
     public static Int32 PantallaX = 512 * 2;
     public static Int32 PantallaY = 288 * 2;
@@ -107,52 +107,15 @@ internal static class ScreenManager
         ScreenManager._padX = (ancho - ScreenManager.PantallaX) / 2;
         ScreenManager._padY = (alto - ScreenManager.PantallaY) / 2;
 
-        foreach(Capa c in ScreenManager._capas)
-        {
-            // Esta función no sólo sirve para cuando quiero cambiar el tamaño de la capa sino también para cuando cambia la ventana.
-            c.CambiarResolucion(c.Ancho, c.Alto);
-        }
-
         // Cambiar el tamaño de la ventana.
         Raylib.SetWindowSize(ancho, alto);
     }
-    [Obsolete]
-    public static void DibujarTodo(Single alfa, Int64 frameActual)
+
+    internal static void CambiarFiltro(TextureFilter filtro)
     {
-        // 1. Renderizado a texturas (cada una a su ritmo)
-        for (Int32 i = 0; i < ScreenManager._capas.Count; i++)
-        {
-            // La capa Main es rápida!
-            Capa c = ScreenManager._capas[i];
-            if (c.EsRapido || (frameActual & (Int64)ScreenManager._fpsOpts) == 0)
-            {
-                c.Renderizar(alfa, frameActual);
-            }
-        }
-
-        // 2. Ensamble final
-        Raylib.BeginDrawing();
-        Raylib.ClearBackground(Color.Black);
-
-        // Pegamos las texturas usando sus Rectangles de destino
-        for(Int32 i = 0; i < ScreenManager._capas.Count; i++)
-        {
-            PegarCapa(ScreenManager._capas[i]);
-        }
-
-        Raylib.EndDrawing();
+        _filtro = filtro;
     }
-
-    private static void PegarCapa(Capa c)
-    {
-        Raylib.DrawTexturePro(
-            c.TexturaInterna.Texture,
-            new Rectangle(0, 0, c.TexturaInterna.Texture.Width, -c.TexturaInterna.Texture.Height),
-            c.DestinoEnPantalla,
-            Vector2.Zero, 0f, c.Tinte
-        );
-    }
-
+    
     public static void CerrarPantalla()
     {
         if(_inicializado == false)
@@ -160,10 +123,7 @@ internal static class ScreenManager
             Console.WriteLine("ScreenManager2 no inicializado!");
             return;
         }
-        for(Int32 i = 0; i < ScreenManager._capas.Count; i++)
-        {
-            ScreenManager._capas[i].Dispose();
-        }
+
     }
 }
 

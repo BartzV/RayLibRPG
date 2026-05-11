@@ -7,7 +7,9 @@ namespace RayLibRPG.Clases.Config;
 public enum Accion
 {
     Arriba, Abajo, Izquierda, Derecha,
-    Aceptar, Cancelar, Menu
+    Aceptar, Cancelar, Menu,
+    // Funciones especiales (no mapeables)
+    F1, F2
 }
 
 internal static class InputConfig
@@ -19,9 +21,11 @@ internal static class InputConfig
         { Accion.Abajo, KeyboardKey.Down },
         { Accion.Izquierda, KeyboardKey.Left },
         { Accion.Derecha, KeyboardKey.Right },
-        { Accion.Aceptar, KeyboardKey.S }, // Tu 'A'
-        { Accion.Cancelar, KeyboardKey.A }, // Tu 'B'
-        { Accion.Menu, KeyboardKey.D }      // Tu 'Start'
+        { Accion.Aceptar, KeyboardKey.S },      // Tu 'A'
+        { Accion.Cancelar, KeyboardKey.A },     // Tu 'B'
+        { Accion.Menu, KeyboardKey.D },         // Tu 'Start'
+        { Accion.F1, KeyboardKey.F1},
+        { Accion.F2, KeyboardKey.F2},
     };
 
     // Diccionario de timers (se queda igual, es eficiente)
@@ -33,10 +37,10 @@ internal static class InputConfig
         {
             if (Raylib.IsKeyDown(mapping.Value))
             {
-                if (!_timersAcciones.ContainsKey(mapping.Key))
+                if (!_timersAcciones.TryGetValue(mapping.Key, out Int32 value))
                     _timersAcciones[mapping.Key] = 0;
                 else
-                    _timersAcciones[mapping.Key]++;
+                    _timersAcciones[mapping.Key] = ++value;
             }
             else
             {
@@ -55,7 +59,7 @@ internal static class InputConfig
         if (ticks == 0) return true;
 
         // Caso 2: Pasó el delay inicial y cumple el intervalo de repetición
-        if (ticks >= init)
+        if (ticks >= init && rep > 0)
         {
             return (ticks - init) % rep == 0;
         }

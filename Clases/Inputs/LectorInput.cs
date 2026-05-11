@@ -6,16 +6,6 @@ namespace RayLibRPG.Clases.Inputs;
 /// <summary>
 /// Clase base para los lectores.
 /// </summary>
-//public abstract class LectorInput
-//{
-//    protected Int32 DELAY_INICIAL = 1;
-//    protected Int32 DELAY_REPETICION = 1;
-//    public virtual Boolean Procesar()
-//    {
-//        return false;
-//    }
-//}
-
 public abstract class LectorInput
 {
     // Delays configurables por cada lector (Menú vs Mundo)
@@ -36,22 +26,28 @@ public abstract class LectorInput
         // --- INPUTS DE SISTEMA / DEBUG ---
         // Estos se procesan SIEMPRE, sin importar los delays del hijo.
 
-        // Ejemplo: Cambio de Resolución (F1, F2, F3...)
-        if (Raylib.IsKeyDown(KeyboardKey.F1))
+        //if (InputConfig.AccionTrigger(Accion.F2, 60, -1) && InputConfig.AccionTrigger(Accion.Arriba, 60, -1))
+        if (Raylib.IsKeyDown(KeyboardKey.F2) && InputConfig.AccionTrigger(Accion.Arriba, 60, -1))
         {
-            ScreenManager.Filtro = ScreenManager.Filtro == TextureFilter.Point ? TextureFilter.Trilinear : TextureFilter.Point;
+            Int32 tam = Math.Min(ScreenManager.TamPixel + 1, 4);
+            (Int32 W, Int32 H) = (512 * tam, 288 * tam);
+            ScreenManager.CambiarResolucion(W, H);
+            Program.EscenarioActual?.Capas.ForEach((x) => x.RecargarResolucion());
             return true;
         }
-        if (Raylib.IsKeyDown(KeyboardKey.F2))
+        if (Raylib.IsKeyDown(KeyboardKey.F2) && InputConfig.AccionTrigger(Accion.Abajo, 60, -1))
         {
-            //Config.CambiarEscala(2); 
+            Int32 tam = Math.Max(ScreenManager.TamPixel - 1, 1);
+            (Int32 W, Int32 H) = (512 * tam, 288 * tam);
+            ScreenManager.CambiarResolucion(W, H);
+            Program.EscenarioActual?.Capas.ForEach((x) => x.RecargarResolucion());
             return true;
         }
 
         // Ejemplo: Toggle de información de Debug
-        if (Raylib.IsKeyDown(KeyboardKey.F10))
+        if (InputConfig.AccionTrigger(Accion.F1, 60, -1))
         {
-            //Config.DebugMode = !Config.DebugMode;
+            ConfigManager.DEBUG ^= DebugMode.Centers;
             return true;
         }
 
