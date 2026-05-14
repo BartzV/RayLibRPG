@@ -85,19 +85,6 @@ internal static class ScreenManager
         _inicializado = true;
     }
 
-    //internal static void LimpiarCapas()
-    //{
-    //    for(int i = 0; i < ScreenManager._capas.Count; i++)
-    //    {
-    //        ScreenManager._capas[i].Dispose();
-    //    }
-    //    ScreenManager._capas.Clear();
-    //}
-    //internal static Capa ObtenerCapa(String nombre)
-    //{
-    //    return ScreenManager._capas.First(c => c.Nombre == nombre);
-    //}
-
     internal static void CambiarResolucion(Int32 ancho, Int32 alto)
     {
         // Algoritmo para el escalado. Se mantiene la relación de aspecto y se agregan barras negras si es necesario.

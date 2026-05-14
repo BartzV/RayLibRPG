@@ -43,6 +43,14 @@ public abstract class LectorInput
             Program.EscenarioActual?.Capas.ForEach((x) => x.RecargarResolucion());
             return true;
         }
+        if (Raylib.IsKeyDown(KeyboardKey.F3))
+        {
+            Console.WriteLine("Escriba un comando:");
+            String? cmd = Console.ReadLine();
+            if(cmd is null)
+                return false;
+            Console.WriteLine("Comando detectado!");
+        }
 
         // Ejemplo: Toggle de información de Debug
         if (InputConfig.AccionTrigger(Accion.F1, 60, -1))

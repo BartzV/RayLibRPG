@@ -3,13 +3,13 @@ using RayLibRPG.Clases.Config;
 using RayLibRPG.Clases.Letras;
 using System.Numerics;
 
-namespace RayLibRPG.Clases;
+namespace RayLibRPG.Clases.Capas;
 
 public class Capa : IDisposable
 {
     // Forma de identificarlo
     public String Nombre;
-    private Boolean _sucio = false;            // Se movió algo para el frente?
+    private Boolean _sucio = false;         // Se movió algo para el frente?
     public Boolean DebeReordenar { get => this._sucio; }
 
     private Boolean _disposed = false;
@@ -153,6 +153,9 @@ public class Capa : IDisposable
         this._sucio = true;
     }
 
+    /// <summary>
+    /// Llamado arbitrario en la clase Escenario de turno. Usala, por ejemplo, luego que termina el turno de los enemigos.
+    /// </summary>
     public void LimpiarBasura()
     {
         this.Elementos.RemoveAll((x) => 
@@ -166,7 +169,6 @@ public class Capa : IDisposable
         });
     }
 
-    // Pensando...
     public void Dispose()
     {
         if (!this._disposed)
