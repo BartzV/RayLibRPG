@@ -1,4 +1,5 @@
 ﻿using Raylib_cs;
+using RayLibRPG.Clases.Capas;
 using RayLibRPG.Clases.Config;
 using RayLibRPG.Clases.Inputs;
 using RayLibRPG.Clases.Letras;

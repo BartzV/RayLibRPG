@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RayLibRPG.Clases.Capa;
+namespace RayLibRPG.Clases.Capas;
 
 internal class CapaV2
 {

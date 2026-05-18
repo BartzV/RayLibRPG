@@ -41,6 +41,8 @@ internal static class Texture2DManager
             throw new InvalidOperationException("Texture2DManager no ha sido inicializado. Llama a InicializarTexturas() primero.");
         }
 
+        ruta = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ruta);
+
         if (_texturasCargadas.TryGetValue(nombre, out Texture2D value))
             return value;
 

@@ -61,4 +61,19 @@ public abstract class LectorInput
 
         return false; // Nadie consumió el input todavía
     }
+
+    protected Int32 Comandos(String cmd)
+    {
+        switch (cmd)
+        {
+            case "debug_c":
+                ConfigManager.DEBUG ^= DebugMode.Centers;
+                return 1;
+            case "all_dirty":
+                Program.EscenarioActual?.Capas.ForEach((x) => x.DebeReordenar = true);
+                return Program.EscenarioActual?.Capas.Count ?? 0;
+            default:
+                return 0;
+        }
+    }
 }

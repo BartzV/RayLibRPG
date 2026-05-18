@@ -18,14 +18,23 @@ public class EscenarioPruebaHUD : EscenarioEngine
     public List<Personaje> personajes = new();
     public List<Letra> letras = new();
 
+    private Texture2D _bosque;
+    // Encabezado
+    private MultiSprite2D _spriteBosque;
+
     public override void Initialize()
     {
+        this.InicializarRecursos();
+
         this.InicializarCapas();
-        //this.InicializarBench();
         this.InicializarPersonajes();
-        //this.InicializarLetras();
-        //this.InicializarHUD();
-        this.DibujarMierda();
+        this.InicializarEncabezado();
+        //this.DibujarMierda();
+    }
+
+    protected void InicializarRecursos()
+    {
+        this._bosque = Texture2DManager.LoadTexture(ConfigManager.RUTA_BG_BOSQUE, "Bosque");
     }
 
     protected void InicializarBench()
@@ -102,13 +111,35 @@ public class EscenarioPruebaHUD : EscenarioEngine
 
     }
 
-    protected void InicializarLetras()
+    protected void InicializarEncabezado()
     {
-        RichText rich = new("Praderas", [Color.White], null, new Vector2(24, 12), new Vector2(2, 2), 1, null);
-        this.Capas[0].InsertarElemento(rich);
+        Int32 cant = 64;
+        Sprite2D sprite = new Sprite2D(_bosque, new Rectangle(96, 16, 16, 16), new Vector2(0, 0), new Vector2(16, 16), null)
+        {
+            Tinte = Color.DarkGreen
+        };
+        this._spriteBosque = new MultiSprite2D(sprite, cant)
+        {
+            CapaPrioridad = -1
+        };
 
-        Letra a = new Letra('O', new Vector2(10, 10), Vector2.One);
-        this.Capas[1].InsertarElemento(a);
+        Vector2[] vec = new Vector2[cant];
+        for(Int32 i = 0; i < cant / 2; i++)
+        {
+            // 16 es lo que mide la textura. No está relacionado a la cantidad de elementos.
+            vec[i] = new Vector2(i * 16, 8);
+            vec[i + cant / 2] = new Vector2(i * 16, 24);
+        }
+        this._spriteBosque.Posiciones = vec;
+
+        RichText rich = new("Praderas", [Color.White], null, new Vector2(24, 12), new Vector2(2, 2), 1, null)
+        {
+            CapaPrioridad = 100
+        };
+        this.Capas[0].InsertarElemento(rich);
+        this.Capas[0].InsertarElemento(this._spriteBosque);
+
+        this.input.Push(new LectorMovimiento<MultiSprite2D>(this._spriteBosque));
 
     }
 
@@ -150,27 +181,6 @@ public class EscenarioPruebaHUD : EscenarioEngine
             (new Vector2(w, h), new Color(0, 128, 192)),
 
         ];
-
-        (Vector2, Color)[] arcoirisFan =
-        [
-            // Centro (El pivot)
-            (new Vector2(w / 2f, h / 2f), Color.Green),    
-            // Centro Arriba
-            (new Vector2(w / 2f, 0f), Color.Yellow),
-            // Parte Izquierda
-            (new Vector2(0f, 0f), Color.Orange),
-            (new Vector2(0f, h / 2f), Color.Yellow),
-            (new Vector2(0f, h), Color.Green),
-            // Centro Abajo
-            (new Vector2(w / 2f, h), Color.SkyBlue),
-            // Parte Derecha
-            (new Vector2(w, h), Color.Blue),
-            (new Vector2(w, h / 2f), Color.SkyBlue),
-            (new Vector2(w, 0f), Color.Green),
-            // Gran Cierre
-            (new Vector2(w / 2f, 0f), Color.Yellow),
-        ];
-
 
         Poligono2DVertexColor vhud = new(vecs, new Vector2(w / 4, h / 4), true);
         this.Capas[1].InsertarElemento(vhud);

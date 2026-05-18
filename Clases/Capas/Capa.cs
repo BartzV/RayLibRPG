@@ -10,7 +10,7 @@ public class Capa : IDisposable
     // Forma de identificarlo
     public String Nombre;
     private Boolean _sucio = false;         // Se movió algo para el frente?
-    public Boolean DebeReordenar { get => this._sucio; }
+    public Boolean DebeReordenar { get => this._sucio; set => this._sucio = value;}
 
     private Boolean _disposed = false;
     // Profundizar...
@@ -113,7 +113,7 @@ public class Capa : IDisposable
 
         if (_sucio)
         {
-            this.Elementos.Sort((x, y) => y.CapaPrioridad.CompareTo(x.CapaPrioridad));
+            this.Elementos.Sort((x, y) => x.CapaPrioridad.CompareTo(y.CapaPrioridad));
             this._sucio = false;
         }
 

@@ -202,6 +202,11 @@ public class Sprite2D : ITransformable, IEntidad
 
 }
 
+/// <summary>
+/// Es un sólo sprite con la orden de renderizarse en varios lugares a la vez. <br/>
+/// Primero se crea el <see cref="Sprite2D"/>, luego se le carga el array con posiciones absolutas, y luego se llama a su función de Draw, <br/>
+/// que se encarga de "disfrazar" al prototipo en cada iteración para renderizarlo en cada posición. <br/>
+/// </summary>
 public class MultiSprite2D : IEntidad, ITransformable
 {
     public Boolean _eliminado;
@@ -273,7 +278,7 @@ public class MultiSprite2D : IEntidad, ITransformable
         set => throw new NotImplementedException();
     }
 
-    public MultiSprite2D(Sprite2D prototipo, int cantidad)
+    public MultiSprite2D(Sprite2D prototipo, Int32 cantidad)
     {
         this.Prototipo = prototipo;
         this.Posiciones = new Vector2[cantidad];
@@ -283,7 +288,7 @@ public class MultiSprite2D : IEntidad, ITransformable
     public void Update()
     {
         // Sincronizamos todas las posiciones para el Lerp
-        for (int i = 0; i < Posiciones.Length; i++)
+        for (Int32 i = 0; i < Posiciones.Length; i++)
         {
             PosicionesAnteriores[i] = Posiciones[i];
         }
@@ -294,8 +299,9 @@ public class MultiSprite2D : IEntidad, ITransformable
         if (!this.Activo) return 0;
         Int32 counter = 0;
         // El truco está en "disfrazar" al prototipo en cada iteración
-        for (int i = 0; i < Posiciones.Length; i++)
+        for (Int32 i = 0; i < Posiciones.Length; i++)
         {
+            //this.Prototipo.Posicionar(this.Posiciones[i]);
             this.Prototipo.PosicionAnterior = this.PosicionesAnteriores[i];
             this.Prototipo.PosicionActual = this.Posiciones[i];
 
@@ -307,12 +313,12 @@ public class MultiSprite2D : IEntidad, ITransformable
 
     public void Mover(Vector2 mov)
     {
-        throw new NotImplementedException();
+        this.Posicion += mov;
     }
 
     public void Posicionar(Vector2 pos)
     {
-        throw new NotImplementedException();
+        this.Posicion = pos;
     }
 
     public void Rotar(Single rad)
