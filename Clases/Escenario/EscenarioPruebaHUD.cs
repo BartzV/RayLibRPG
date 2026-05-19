@@ -44,9 +44,9 @@ public class EscenarioPruebaHUD : EscenarioEngine
             Fondo = Color.RayWhite,
         });
 
-        for(var x = 0; x < 64; x++)
+        for (var x = 0; x < 64; x++)
         {
-            for(var y = 0; y < 36; y++)
+            for (var y = 0; y < 36; y++)
             {
                 Letra a = new Letra('+', new Vector2(x * 8 + 4, y * 8 + 4), Vector2.One)
                 {
@@ -124,11 +124,11 @@ public class EscenarioPruebaHUD : EscenarioEngine
         };
 
         Vector2[] vec = new Vector2[cant];
-        for(Int32 i = 0; i < cant / 2; i++)
+        for (Int32 i = 0; i < cant / 2; i++)
         {
             // 16 es lo que mide la textura. No está relacionado a la cantidad de elementos.
-            vec[i] = new Vector2(i * 16, 8);
-            vec[i + cant / 2] = new Vector2(i * 16, 24);
+            vec[i] = new Vector2(i * 16 + 8, 8);
+            vec[i + cant / 2] = new Vector2(i * 16 + 8, 24);
         }
         this._spriteBosque.Posiciones = vec;
 
@@ -136,10 +136,9 @@ public class EscenarioPruebaHUD : EscenarioEngine
         {
             CapaPrioridad = 100
         };
-        this.Capas[0].InsertarElemento(rich);
         this.Capas[0].InsertarElemento(this._spriteBosque);
+        this.Capas[0].InsertarElemento(rich);
 
-        this.input.Push(new LectorMovimiento<MultiSprite2D>(this._spriteBosque));
 
     }
 
